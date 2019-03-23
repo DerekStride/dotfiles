@@ -2,3 +2,7 @@
 *~
 *.swp
 .vscode/
+node_modules
+.ruby-version
+.rspec_status
+

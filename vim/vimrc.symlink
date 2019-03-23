@@ -1,5 +1,31 @@
 syntax on
+set number
 
 " Wrap gitcommit file types at the appropriate length
 filetype indent plugin on
-set tabstop=2 shiftwidth=2 expandtab
+
+set tabstop=2 softtabstop=0 expandtab shiftwidth=2 smarttab
+set lcs=tab:>-
+set list
+
+"CTRL-P
+let g:ctrlp_map = '<c-p>'
+let g:ctrlp_cmd = 'CtrlP'
+
+"Colors
+colorscheme awesome_derek
+
+call plug#begin('~/.vim/plugged')
+Plug 'ctrlpvim/ctrlp.vim'
+Plug 'fatih/vim-go'
+call plug#end()
+
+" Show syntax highlighting groups for word under cursor
+"nmap <C-S-I> :call <SID>SynStack()<CR>
+"function! <SID>SynStack()
+"  if !exists("*synstack")
+"      return
+"    endif
+"  echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+"endfunc
+
