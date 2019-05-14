@@ -9,8 +9,10 @@
 [credential]
         helper = osxkeychain
 [alias]
-        b = branch
+        c = commit
         co = checkout
+        b = branch
+        a = add
         promote = !$ZSH/bin/git-promote
         wtf     = !$ZSH/bin/git-wtf
         rank-contributors = !$ZSH/bin/git-rank-contributors
@@ -37,13 +39,7 @@
         #
         # Setting to git 2.0 default to surpress warning message
         default = simple
-[filter "media"]
-	required = true
-	clean = git media clean %f
-	smudge = git media smudge %f
-[filter "hawser"]
-	clean = git hawser clean %f
-	smudge = git hawser smudge %f
-	required = true
-[url "git@github.com:"]
-	insteadOf = https://github.com/
+[diff]
+	algorithm = patience
+[protocol]
+	version = 2
