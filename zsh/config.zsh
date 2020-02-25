@@ -6,7 +6,6 @@ fi
 
 export LSCOLORS="exfxcxdxbxegedabagacad"
 export CLICOLOR=true
-export PAGER=vimpager
 
 fpath=($ZSH/functions $fpath)
 

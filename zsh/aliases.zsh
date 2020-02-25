@@ -2,7 +2,6 @@ alias mkdir='mkdir -p'
 alias grep='grep --color=auto'
 
 # Config
-alias less=$PAGER
 
 # Shortcuts
 alias shortcuts='cat ~/.dotfiles/zsh/aliases.zsh; cat ~/.dotfiles/git/aliases.zsh'

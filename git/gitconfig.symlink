@@ -4,19 +4,10 @@
 [hub]
         protocol = https
 [user]
-        name = DerekStride
+        name = derekstride
         email = djgstride@gmail.com
-[credential]
-        helper = osxkeychain
 [alias]
-        c = commit
         co = checkout
-        b = branch
-        a = add
-        promote = !$ZSH/bin/git-promote
-        wtf     = !$ZSH/bin/git-wtf
-        rank-contributors = !$ZSH/bin/git-rank-contributors
-        count   = !git shortlog -sn
 [color]
         diff = auto
         status = auto
@@ -40,6 +31,6 @@
         # Setting to git 2.0 default to surpress warning message
         default = simple
 [diff]
-	algorithm = patience
+        algorithm = patience
 [protocol]
-	version = 2
+        version = 2
