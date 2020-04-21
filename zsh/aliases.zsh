@@ -14,5 +14,3 @@ alias school='cd ~/Dropbox/Documents/School/'
 alias chrome='open /Applications/Google\ Chrome.app'
 alias notes='code ~/Dropbox/Documents/Work/Shopify/notes'
 alias g=git
-alias k=kubectl
-
