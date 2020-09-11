@@ -15,17 +15,13 @@ let g:ctrlp_cmd = 'CtrlP'
 "Colors
 colorscheme elflord
 
+"netrw config
+let g:netrw_banner = 0
+let g:netrw_winsize = 25
+
 call plug#begin('~/.vim/plugged')
-Plug 'ctrlpvim/ctrlp.vim'
-Plug 'fatih/vim-go'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 call plug#end()
 
-" Show syntax highlighting groups for word under cursor
-"nmap <C-S-I> :call <SID>SynStack()<CR>
-"function! <SID>SynStack()
-"  if !exists("*synstack")
-"      return
-"    endif
-"  echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
-"endfunc
+"fzf config
 
