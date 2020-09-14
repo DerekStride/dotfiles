@@ -8,10 +8,6 @@ set tabstop=2 softtabstop=0 expandtab shiftwidth=2 smarttab
 set lcs=tab:>-
 set list
 
-"CTRL-P
-let g:ctrlp_map = '<c-p>'
-let g:ctrlp_cmd = 'CtrlP'
-
 "Colors
 colorscheme elflord
 
@@ -24,4 +20,8 @@ Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 call plug#end()
 
 "fzf config
+nnoremap <C-p> :FZF<CR>
+
+"ctags
+set tags=.tags;
 
