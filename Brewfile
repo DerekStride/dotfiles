@@ -4,6 +4,8 @@ tap 'homebrew/bundle'
 tap 'puma/puma'
 
 brew 'rg'
+brew 'bat'
+brew 'fzf'
 brew 'coreutils'
 
 cask '1password'

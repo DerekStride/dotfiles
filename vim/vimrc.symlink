@@ -8,6 +8,8 @@ set tabstop=2 softtabstop=0 expandtab shiftwidth=2 smarttab
 set lcs=tab:>-
 set list
 
+let mapleader = "\\"
+
 "Colors
 colorscheme elflord
 
@@ -16,11 +18,28 @@ let g:netrw_banner = 0
 let g:netrw_winsize = 25
 
 call plug#begin('~/.vim/plugged')
+Plug 'junegunn/fzf.vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 call plug#end()
 
 "fzf config
-nnoremap <C-p> :FZF<CR>
+nnoremap <silent> <C-p> :Files<CR>
+nnoremap <silent> <Leader>f :RG<CR>
+
+"Ripgrep without searching the filenames
+"command! -bang -nargs=* Rg call fzf#vim#grep("rg --column --line-number --no-heading --color=always --smart-case ".shellescape(<q-args>), 1, {'options': '--delimiter : --nth 4..'}, <bang>0)
+
+"Ripgrep with FZF preview using bat
+function! RipgrepFzf(query, fullscreen)
+  let command_fmt = 'rg --column --line-number --no-heading --color=always --smart-case -- %s || true'
+  let initial_command = printf(command_fmt, shellescape(a:query))
+  let reload_command = printf(command_fmt, '{q}')
+  let spec = {'options': ['--phony', '--preview', 'bat --style=numbers,changes --color always {}', '--query', a:query, '--bind', 'change:reload:'.reload_command]}
+  call fzf#vim#grep(initial_command, 1, fzf#vim#with_preview(spec), a:fullscreen)
+endfunction
+
+"Define RG instead of overwriting Rg
+command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
 
 "ctags
 set tags=.tags;
