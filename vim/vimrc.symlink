@@ -26,18 +26,19 @@ call plug#end()
 nnoremap <silent> <C-p> :Files<CR>
 nnoremap <silent> <Leader>f :RG<CR>
 
-"Ripgrep without searching the filenames
-command! -bang -nargs=* Rg call fzf#vim#grep("rg --column --line-number --no-heading --color=always --smart-case ".shellescape(<q-args>), 1, {'options': '--delimiter : --nth 4..'}, <bang>0)
 
 "Ripgrep with FZF preview using bat
 function! RipgrepFzf(query, fullscreen)
   let command_fmt = 'rg --column --line-number --no-heading --color=always --smart-case -- %s || true'
   let initial_command = printf(command_fmt, shellescape(a:query))
-  let reload_command = printf(command_fmt, '{q}')
 
-  "Let Ripgrep do the filtering and just use fzf for selecting
+  "Let Ripgrep do the filtering and just use fzf for selecting -- disables the fuzzy matching.
+  "let reload_command = printf(command_fmt, '{q}')
   "let spec = {'options': ['--phony', '--preview', 'bat --style=numbers,changes --color always {}', '--query', a:query, '--bind', 'change:reload:'.reload_command]}
-  let spec = {'options': ['--preview', 'bat --style=numbers,changes --color always {}', '--query', a:query]}
+
+  "Ripgrep without searching the filenames
+  let spec = {'options': ['--delimiter', ':', '--nth', '4..', '--preview', 'bat --style=numbers,changes --color always {}', '--query', a:query]}
+
   call fzf#vim#grep(initial_command, 1, fzf#vim#with_preview(spec), a:fullscreen)
 endfunction
 
