@@ -13,6 +13,10 @@ let mapleader = "\\"
 "Colors
 colorscheme elflord
 
+"move line up or down .+1 - current line +1 \ == re-indent to match area
+nnoremap <silent> <A-j> :m .+1<CR>==
+nnoremap <silent> <A-k> :m .-2<CR>==
+
 "netrw config
 let g:netrw_banner = 0
 let g:netrw_winsize = 25
@@ -25,7 +29,6 @@ call plug#end()
 "fzf config
 nnoremap <silent> <C-p> :Files<CR>
 nnoremap <silent> <Leader>f :RG<CR>
-
 
 "Ripgrep with FZF preview using bat
 function! RipgrepFzf(query, fullscreen)

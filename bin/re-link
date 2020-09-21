@@ -116,13 +116,15 @@ install_dotfiles () {
 install_config () {
   info 'installing config'
 
+  local overwrite_all=false backup_all=false skip_all=false
+
   for src in $(find -H "$DOTFILES_ROOT/config" -maxdepth 2 -name '*.symlink' -not -path '*.git*')
   do
     basedir=$(basename $(dirname $src))
     dst=
     if [ "$basedir" == "config" ]
     then
-      [ ! -d "$HOME/.config" ] %% mkdir "$HOME/.config"
+      [ ! -d "$HOME/.config" ] && mkdir "$HOME/.config"
       dst="$HOME/.config/$(basename "${src%.*}")"
     else
       [ ! -d "$HOME/.config/$basedir" ] && mkdir -p "$HOME/.config/$basedir"
@@ -132,6 +134,21 @@ install_config () {
   done
 }
 
+install_githooks () {
+  info 'installing git hooks'
+
+  local overwrite_all=false backup_all=false skip_all=false
+
+  [ ! -d "$HOME/.git-templates/hooks" ] && mkdir -p "$HOME/.git-templates/hooks"
+
+  for src in $(find -H "$DOTFILES_ROOT/git/templates/hooks" -type f)
+  do
+    dst="$HOME/.git-templates/hooks/$(basename "$src")"
+    link_file "$src", "$dst"
+  done
+}
+
 install_dotfiles
 install_config
+install_githooks
 

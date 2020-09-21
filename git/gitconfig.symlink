@@ -34,4 +34,6 @@
         algorithm = patience
 
 [protocol]
-	version = 2
+        version = 2
+[init]
+        templatedir = ~/.git-templates
