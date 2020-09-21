@@ -25,8 +25,7 @@ fail () {
   exit
 }
 
-
-link_file () {
+configure_file () {
   local src=$1 dst=$2
 
   local overwrite= backup= skip=
@@ -91,14 +90,38 @@ link_file () {
     if [ "$skip" == "true" ]
     then
       success "skipped $src"
+      return 1
     fi
   fi
 
   if [ "$skip" != "true" ]  # "false" or empty
   then
+    return 0
     ln -s "$1" "$2"
     success "linked $1 to $2"
   fi
+}
+
+
+link_file () {
+  local overwrite_all=false backup_all=false skip_all=false
+
+  if configure_file "$1" "$2"
+  then
+    ln -s "$1" "$2"
+    success "linked $1 to $2"
+  fi
+}
+
+copy_file () {
+  local overwrite_all=false backup_all=false skip_all=false
+
+  if configure_file "$1" "$2"
+  then
+    cp "$1" "$2"
+    success "copied $1 to $2"
+  fi
+
 }
 
 install_dotfiles () {
@@ -144,7 +167,7 @@ install_githooks () {
   for src in $(find -H "$DOTFILES_ROOT/git/templates/hooks" -type f)
   do
     dst="$HOME/.git-templates/hooks/$(basename "$src")"
-    link_file "$src", "$dst"
+    copy_file "$src" "$dst"
   done
 }
 
