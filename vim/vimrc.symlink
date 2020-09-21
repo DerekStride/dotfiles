@@ -29,6 +29,8 @@ call plug#end()
 "fzf config
 nnoremap <silent> <C-p> :Files<CR>
 nnoremap <silent> <Leader>f :RG<CR>
+"run tags matching the current word jump directly if there is only one match
+nnoremap <silent> <leader>t :call fzf#vim#tags('^' . expand('<cword>'), {'options': '--exact --select-1 --exit-0 +i'})<CR>
 
 "Ripgrep with FZF preview using bat
 function! RipgrepFzf(query, fullscreen)
@@ -49,5 +51,5 @@ endfunction
 command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
 
 "ctags
-set tags=.tags;
+set tags=.git/tags;
 
