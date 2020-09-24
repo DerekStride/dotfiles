@@ -39,7 +39,7 @@ configure_file () {
 
       local currentSrc="$(readlink $dst)"
 
-      if [ "$currentSrc" == "$src" ]
+      if [ "$currentSrc" == "$src" ] || cmp --silent -- $src $dst
       then
 
         skip=true;
