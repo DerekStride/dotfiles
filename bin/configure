@@ -127,8 +127,6 @@ copy_file () {
 install_dotfiles () {
   info 'installing dotfiles'
 
-  local overwrite_all=false backup_all=false skip_all=false
-
   for src in $(find -H "$DOTFILES_ROOT" -maxdepth 2 -name '*.symlink' -not -path '*.git*')
   do
     dst="$HOME/.$(basename "${src%.*}")"
@@ -138,8 +136,6 @@ install_dotfiles () {
 
 install_config () {
   info 'installing config'
-
-  local overwrite_all=false backup_all=false skip_all=false
 
   for src in $(find -H "$DOTFILES_ROOT/config" -maxdepth 2 -name '*.symlink' -not -path '*.git*')
   do
@@ -159,8 +155,6 @@ install_config () {
 
 install_githooks () {
   info 'installing git hooks'
-
-  local overwrite_all=false backup_all=false skip_all=false
 
   [ ! -d "$HOME/.git-templates/hooks" ] && mkdir -p "$HOME/.git-templates/hooks"
 

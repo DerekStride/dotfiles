@@ -2,9 +2,9 @@
 
 dir=${1:-.}
 
-tmux new-session -d -c ${dir} "vim ${dir}"
+tmux new-session -d -c ${dir} "nvim ${dir}"
 tmux split-window -h -c ${dir}
 tmux select-layout "3344,295x78,0,0{186x78,0,0,45,108x78,187,0,46}"
 tmux select-pane -L
-tmux -2 attach-session -d
+tmux attach-session -d
 

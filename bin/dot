@@ -3,8 +3,13 @@
 # dot
 #
 # `dot` handles installation, updates, things like that. Run it periodically
-# to make sure you're on the latest and greatest.
+# to make sure you're on the latest and greatest. For macos only.
 export ZSH=$HOME/.dotfiles
+
+if test ! "$(uname)" = "Darwin"
+then
+  exit 0
+fi
 
 # Set macOS defaults
 $ZSH/macos/set-defaults.sh
