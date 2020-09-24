@@ -1,3 +1,7 @@
+# enable 256 bit colors
+set -g default-terminal 'screen-256color'
+set -ga terminal-overrides ',*256col*:Tc'
+
 # split panes using | and -
 bind h split-window -v
 bind v split-window -h
@@ -6,4 +10,11 @@ unbind %
 
 # reload with ctrl-r
 bind r source-file ~/.dotfiles/tmux/tmux.conf \; display "Reloaded!" # Reload with ctrl-r
+
+# use vi keys in copy mode
+setw -g mode-keys vi
+
+# active pane is a different colour
+set -g window-style "fg=terminal,bg=#424450"
+set -g window-active-style "fg=terminal,bg=terminal"
 

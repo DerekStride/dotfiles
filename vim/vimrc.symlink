@@ -32,13 +32,6 @@ nnoremap <silent> <Leader>f :RG<CR>
 "run tags matching the current word jump directly if there is only one match
 nnoremap <silent> <leader>t :call fzf#vim#tags('^' . expand('<cword>'), {'options': '--exact --select-1 --exit-0 +i'})<CR>
 
-" This is the default extra key bindings
-let g:fzf_action = {
-  \ 'return': 'tab split',
-  \ 'ctrl-t': 'e',
-  \ 'ctrl-x': 'split',
-  \ 'ctrl-v': 'vsplit' }
-
 "Ripgrep with FZF preview using bat
 function! RipgrepFzf(query, fullscreen)
   let command_fmt = 'rg --column --line-number --no-heading --color=always --smart-case -- %s || true'
