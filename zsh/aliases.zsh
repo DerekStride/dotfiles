@@ -8,4 +8,5 @@ alias myip='curl ip.appspot.com'
 alias notes="$EDITOR ~/Dropbox/Documents/Work/Shopify/notes"
 alias g=git
 alias k=kubectl
+alias vim=nvim
 
