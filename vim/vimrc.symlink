@@ -56,6 +56,15 @@ endfunction
 "Define RG instead of overwriting Rg
 command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
 
+"Blame
+function! GitBlameSplit()
+  let l:file = expand('%')
+  let command_fmt = 'git --no-pager blame %s'
+  let initial_command = printf(command_fmt, shellescape(l:file))
+  let lines_with_blame =  system(initial_command)
+  split(lines_with_blame)
+endfunction
+
 "ctags
 set tags=.git/tags;
 
