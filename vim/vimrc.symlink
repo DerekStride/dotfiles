@@ -17,6 +17,9 @@ colorscheme elflord
 nnoremap <silent> <A-j> :m .+1<CR>==
 nnoremap <silent> <A-k> :m .-2<CR>==
 
+"turn off highlights
+nnoremap <silent> <Leader>h :noh<CR>
+
 "netrw config
 let g:netrw_banner = 0
 let g:netrw_winsize = 25
