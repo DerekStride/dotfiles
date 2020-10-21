@@ -21,7 +21,10 @@ nnoremap <silent> <A-j> :m .+1<CR>==
 nnoremap <silent> <A-k> :m .-2<CR>==
 
 "turn off highlights
-nnoremap <silent> <Leader>h :noh<CR>
+nnoremap <silent> <leader>h :noh<CR>
+
+"open new tab with file explorer
+nnoremap <silent> <leader>e :Texplore<CR>
 
 "netrw config
 let g:netrw_banner = 0
@@ -34,7 +37,7 @@ call plug#end()
 
 "fzf config
 nnoremap <silent> <C-p> :Files<CR>
-nnoremap <silent> <Leader>f :RG<CR>
+nnoremap <silent> <leader>f :RG<CR>
 "run tags matching the current word jump directly if there is only one match
 nnoremap <silent> <leader>t :call fzf#vim#tags('^' . expand('<cword>'), {'options': '--exact --select-1 --exit-0 +i'})<CR>
 
