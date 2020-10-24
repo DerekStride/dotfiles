@@ -1,7 +1,7 @@
 syntax on
 set number
 
-" Wrap gitcommit file types at the appropriate length
+"Wrap gitcommit file types at the appropriate length
 filetype indent plugin on
 
 set tabstop=2 softtabstop=0 expandtab shiftwidth=2 smarttab
@@ -12,9 +12,6 @@ set list
 set autoread
 
 let mapleader = "\\"
-
-"Colors
-colorscheme elflord
 
 "move line up or down .+1 - current line +1 \ == re-indent to match area
 nnoremap <silent> <A-j> :m .+1<CR>==
@@ -33,7 +30,10 @@ let g:netrw_winsize = 25
 call plug#begin('~/.vim/plugged')
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'dracula/vim', { 'as': 'dracula' }
 call plug#end()
+
+colorscheme dracula
 
 "fzf config
 nnoremap <silent> <C-p> :Files<CR>

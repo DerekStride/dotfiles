@@ -1,6 +1,6 @@
 # enable 256 bit colors
-set -g default-terminal 'screen-256color'
-set -ga terminal-overrides ',*256col*:Tc'
+set -g default-terminal 'tmux-256color'
+set -ga terminal-overrides ",tmux-256color:Tc"
 
 # split panes using | and -
 bind h split-window -v
