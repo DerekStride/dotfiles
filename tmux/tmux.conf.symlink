@@ -9,7 +9,7 @@ unbind '"'
 unbind %
 
 # reload with ctrl-r
-bind r source-file ~/.dotfiles/tmux/tmux.conf \; display "Reloaded!" # Reload with ctrl-r
+bind r source-file ~/.tmux.conf \; display "Reloaded!" # Reload with ctrl-r
 
 # use vi keys in copy mode
 setw -g mode-keys vi
@@ -17,4 +17,19 @@ setw -g mode-keys vi
 # active pane is a different colour
 set -g window-style "fg=terminal,bg=#424450"
 set -g window-active-style "fg=terminal,bg=terminal"
+
+# List of plugins
+set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'dracula/tmux'
+
+# Dracula settings
+set -g @dracula-show-battery false
+set -g @dracula-show-network false
+set -g @dracula-show-weather false
+set -g @dracula-show-time false
+set -g @dracula-show-location false
+set -g @dracula-show-left-icon session
+
+# Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
+run '~/.tmux/plugins/tpm/tpm'
 

@@ -30,6 +30,7 @@ let g:netrw_winsize = 25
 call plug#begin('~/.vim/plugged')
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'vim-airline/vim-airline'
 Plug 'dracula/vim', { 'as': 'dracula' }
 call plug#end()
 
