@@ -58,3 +58,4 @@ then
 fi
 
 [ -f ~/.fzf.local.zsh ] && source ~/.fzf.local.zsh
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
