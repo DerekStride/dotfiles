@@ -250,10 +250,12 @@ mouse_bindings:
 key_bindings:
   - { key: Comma,     mods: Command,      command: { program: "open", args: ["~/.config/alacritty/alacritty.yml"] } }
   - { key: N,         mods: Command,      action: SpawnNewInstance             }
+  - { key: C,         mods: Super,        action: Copy                         }
+  - { key: V,         mods: Super,        action: Paste                        }
   - { key: Space,     mods: Alt,          chars: " "                           }
   - { key: Back,      mods: Super,        chars: "\x15"                        } # delete word/line
   - { key: Left,      mods: Alt,          chars: "\x1bb"                       } # one word left
   - { key: Right,     mods: Alt,          chars: "\x1bf"                       } # one word right
-  - { key: Left,      mods: Command,      chars: "\x1bOH",   mode: AppCursor   } # Home
-  - { key: Right,     mods: Command,      chars: "\x1bOF",   mode: AppCursor   } # End
+  - { key: Left,      mods: Super,        chars: "\x1bOH",   mode: AppCursor   } # Home
+  - { key: Right,     mods: Super,        chars: "\x1bOF",   mode: AppCursor   } # End
 
