@@ -18,6 +18,9 @@ setw -g mode-keys vi
 set -g window-style "fg=terminal,bg=#424450"
 set -g window-active-style "fg=terminal,bg=terminal"
 
+# focus events are useful for triggering commands when switching windows / panes
+set -g focus-events on
+
 # List of plugins
 set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'dracula/tmux'

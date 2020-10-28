@@ -11,6 +11,11 @@ set list
 "auto reload files
 set autoread
 
+augroup window_management do
+  au!
+  au FocusGained * :checktime
+augroup END
+
 let mapleader = "\\"
 
 "move line up or down .+1 - current line +1 \ == re-indent to match area
