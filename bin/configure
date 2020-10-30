@@ -135,13 +135,14 @@ install_dotfiles () {
 install_config () {
   info 'installing config'
 
-  for src in $(find -H "$DOTFILES_ROOT/config" -maxdepth 2 -name '*.symlink' -not -path '*.git*')
+  [ ! -d "$HOME/.config" ] && mkdir "$HOME/.config"
+
+  for src in $(find -H "$DOTFILES_ROOT" -maxdepth 4 -type f -path '*/config/*' -not -path '*.git*')
   do
     basedir=$(basename $(dirname $src))
     dst=
     if [ "$basedir" == "config" ]
     then
-      [ ! -d "$HOME/.config" ] && mkdir "$HOME/.config"
       dst="$HOME/.config/$(basename "${src%.*}")"
     else
       [ ! -d "$HOME/.config/$basedir" ] && mkdir -p "$HOME/.config/$basedir"
