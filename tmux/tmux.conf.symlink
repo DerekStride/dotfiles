@@ -11,6 +11,9 @@ unbind %
 # reload with prefix + r
 bind r source-file ~/.tmux.conf \; display "Reloaded!" # Reload with ctrl-r
 
+# Ctrl-Space to zoom current pane
+bind-key Space resize-pane -Z
+
 # use vi keys in copy mode
 setw -g mode-keys vi
 
