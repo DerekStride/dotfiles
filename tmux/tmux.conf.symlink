@@ -2,17 +2,23 @@
 set -g default-terminal 'tmux-256color'
 set -ga terminal-overrides ",tmux-256color:Tc"
 
-# split panes using | and -
-bind h split-window -v
+# split panes using s and v
+bind s split-window -v
 bind v split-window -h
 unbind '"'
 unbind %
 
-# reload with ctrl-r
+# reload with prefix + r
 bind r source-file ~/.tmux.conf \; display "Reloaded!" # Reload with ctrl-r
 
 # use vi keys in copy mode
 setw -g mode-keys vi
+
+# pane movement shortcuts (same as vim)
+bind h select-pane -L
+bind j select-pane -D
+bind k select-pane -U
+bind l select-pane -R
 
 # active pane is a different colour
 set -g window-style "fg=terminal,bg=#424450"
