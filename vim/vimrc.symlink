@@ -1,32 +1,44 @@
 syntax on
+
 set number
+set tabstop=2 softtabstop=0 expandtab shiftwidth=2 smarttab
+set lcs=tab:>-
+set list
+set autoread
 
 "Wrap gitcommit file types at the appropriate length
 filetype indent plugin on
 
-set tabstop=2 softtabstop=0 expandtab shiftwidth=2 smarttab
-set lcs=tab:>-
-set list
-
-"auto reload files
-set autoread
-
+"auto reload files, :checktime will reload the file.
+"if using vim inside tmux this requires setting focus-events in your .tmux.conf with:
+"set -g focus-events on
 augroup window_management do
   au!
   au FocusGained * :checktime
 augroup END
 
-let mapleader = "\\"
+let mapleader = " "
 
 "move line up or down .+1 - current line +1 \ == re-indent to match area
-nnoremap <silent> <A-j> :m .+1<CR>==
-nnoremap <silent> <A-k> :m .-2<CR>==
-
+nnoremap <silent> <leader>J :m .+1<CR>==
+nnoremap <silent> <leader>K :m .-2<CR>==
 "turn off highlights
 nnoremap <silent> <leader>h :noh<CR>
 
+"move between windows
+nnoremap <leader>h :wincmd h<CR>
+nnoremap <leader>j :wincmd j<CR>
+nnoremap <leader>k :wincmd k<CR>
+nnoremap <leader>l :wincmd l<CR>
+
+" yank to system clipboard
+nnoremap <leader>y "+y
+vnoremap <leader>y "+y
+nnoremap <leader>Y gg"+yG
+
 "open new tab with file explorer
 nnoremap <silent> <leader>e :Texplore<CR>
+nmap <silent> <leader>pv :wincmd v<bar> :Ex<bar> :vertical resize 30<CR>
 
 "netrw config
 let g:netrw_banner = 0
