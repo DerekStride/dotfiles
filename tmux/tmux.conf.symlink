@@ -29,6 +29,7 @@ set -g window-active-style "fg=terminal,bg=terminal"
 
 # focus events are useful for triggering commands when switching windows / panes
 set -g focus-events on
+set -sg escape-time 5
 
 # List of plugins
 set -g @plugin 'tmux-plugins/tpm'
