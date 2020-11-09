@@ -1,10 +1,50 @@
-#!/bin/sh
+#!/usr/bin/env bash
+# Thanks to ThePrimeagen, source:
+# https://github.com/awesome-streamers/awesome-streamerrc/blob/33ff4dfbb624d01dae36891b9a57334dbf0426b2/ThePrimeagen/tmux
 
-dir=${1:-.}
+STOREFRONT="~/src/github.com/Shopify/storefront-renderer"
 
-tmux new-session -d -c ${dir} "nvim ${dir}"
-tmux split-window -h -c ${dir}
-tmux select-layout "3344,295x78,0,0{186x78,0,0,45,108x78,187,0,46}"
-tmux select-pane -L
-tmux attach-session -d
+createWindow() {
+    session=$1
+    window=$2
+    shift
+    shift
+    hasWindow=$(tmux list-windows -t $session | grep "$window")
+
+    if [ -z "$hasWindow" ]; then
+        cmd="tmux neww -t $session: -n $window -d"
+        if [ $# -gt 0 ]; then
+            cmd="$cmd $@"
+        fi
+        echo "Creating Window(\"$hasWindow\"): $cmd"
+        eval $cmd
+    fi
+}
+
+createSession() {
+    session=$1
+    window=$2
+    shift
+    shift
+    hasSession=$(tmux ls -F "#{session_name}" | grep "$session")
+
+    if [ -z "$hasSession" ]; then
+      cmd="tmux new -s $session -d -n $window $@ > /dev/null 2>&1"
+
+      echo "Creating Session: $cmd"
+      eval $cmd
+    fi
+}
+
+while [ "$#" -gt 0 ]; do
+    curr=$1
+    shift
+
+    case "$curr" in
+    "--sfr")
+        createSession sfr primary -c $STOREFRONT
+        ;;
+    *) echo "Unavailable command... $curr"
+    esac
+done
 
