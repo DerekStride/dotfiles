@@ -28,3 +28,18 @@ nnoremap <silent> <leader>f :RG<CR>
 "run tags matching the current word jump directly if there is only one match
 nnoremap <silent> <leader>t :call fzf#vim#tags('^' . expand('<cword>'), {'options': '--exact --select-1 --exit-0 +i'})<CR>
 
+let g:fzf_colors =
+\ { 'fg':      ['fg', 'Normal'],
+  \ 'bg':      ['bg', 'Normal'],
+  \ 'hl':      ['fg', 'Search'],
+  \ 'fg+':     ['fg', 'Normal'],
+  \ 'bg+':     ['bg', 'Normal'],
+  \ 'hl+':     ['fg', 'DraculaOrange'],
+  \ 'info':    ['fg', 'DraculaPurple'],
+  \ 'border':  ['fg', 'DraculaBoundary'],
+  \ 'prompt':  ['fg', 'DraculaGreen'],
+  \ 'pointer': ['fg', 'Exception'],
+  \ 'marker':  ['fg', 'Keyword'],
+  \ 'spinner': ['fg', 'Label'],
+  \ 'header':  ['fg', 'Comment'] }
+

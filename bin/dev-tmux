@@ -44,6 +44,9 @@ while [ "$#" -gt 0 ]; do
     "--sfr")
         createSession sfr primary -c $STOREFRONT
         ;;
+      "--dot")
+        createSession dot primary -c $ZSH
+        ;;
     *) echo "Unavailable command... $curr"
     esac
 done
