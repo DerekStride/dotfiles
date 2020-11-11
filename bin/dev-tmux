@@ -3,6 +3,7 @@
 # https://github.com/awesome-streamers/awesome-streamerrc/blob/33ff4dfbb624d01dae36891b9a57334dbf0426b2/ThePrimeagen/tmux
 
 STOREFRONT="~/src/github.com/Shopify/storefront-renderer"
+SHOPIFY="~/src/github.com/Shopify/shopify"
 
 createWindow() {
     session=$1
@@ -36,13 +37,26 @@ createSession() {
     fi
 }
 
+isWork() {
+  if [ -z "$WORK" ]; then
+    echo "\$WORK env var not set."
+    return 1
+  fi
+  return 0
+}
+
 while [ "$#" -gt 0 ]; do
     curr=$1
     shift
 
     case "$curr" in
     "--sfr")
+        isWork || continue
         createSession sfr primary -c $STOREFRONT
+        ;;
+    "--shopify")
+        isWork || continue
+        createSession shopify primary -c $SHOPIFY
         ;;
       "--dot")
         createSession dot primary -c $ZSH

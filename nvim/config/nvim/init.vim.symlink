@@ -57,6 +57,7 @@ nnoremap <silent> <leader>l :wincmd l<CR>
 nnoremap <leader>y "+y
 vnoremap <leader>y "+y
 nnoremap <leader>Y gg"+yG
+nnoremap <leader>p "+p
 
 "open new tab with file explorer
 nnoremap <silent> <leader>e :Texplore<CR>
