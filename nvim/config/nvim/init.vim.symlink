@@ -1,6 +1,10 @@
 syntax on
 filetype indent plugin on
 
+if exists("$ZSH")
+  set runtimepath+=$ZSH/nvim/runtime
+endif
+
 set exrc
 
 set number
@@ -75,16 +79,6 @@ Plug 'dracula/vim', { 'as': 'dracula' }
 call plug#end()
 
 colorscheme dracula
-
-if exists("$ZSH")
-  for filename in split(globpath("$ZSH/nvim", "*.vim"), "\n")
-    execute "source " . filename
-  endfor
-
-  for filename in split(globpath("$ZSH/nvim", "*.lua"), "\n")
-    execute "luafile " . filename
-  endfor
-endif
 
 "ctags
 set tags=.git/tags;

@@ -1,4 +1,5 @@
 git/gitconfig.local.symlink
 Brewfile.lock.json
 tmp/
+.netrwhist
 
