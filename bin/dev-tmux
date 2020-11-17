@@ -27,7 +27,7 @@ createSession() {
     window=$2
     shift
     shift
-    hasSession=$(tmux ls -F "#{session_name}" | grep "$session")
+    hasSession=$(tmux ls -F "#{session_name}" 2> /dev/null | grep "$session")
 
     if [ -z "$hasSession" ]; then
       cmd="tmux new -s $session -d -n $window $@ > /dev/null 2>&1"
