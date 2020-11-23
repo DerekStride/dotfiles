@@ -24,9 +24,12 @@ command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
 
 "fzf config
 nnoremap <silent> <C-p> :Files<CR>
-nnoremap <silent> <leader>f :RG<CR>
+nnoremap <silent> <leader>zf :RG<CR>
+nnoremap <silent> <leader>zb :Buffers<CR>
+nnoremap <silent> <leader>zh :Helptags<CR>
+nnoremap <silent> <leader>zy :History/<CR>
 "run tags matching the current word jump directly if there is only one match
-nnoremap <silent> <leader>t :call fzf#vim#tags('^' . expand('<cword>'), {'options': '--exact --select-1 --exit-0 +i'})<CR>
+nnoremap <silent> <leader>zt :call fzf#vim#tags('^' . expand('<cword>'), {'options': '--exact --select-1 --exit-0 +i'})<CR>
 
 let g:fzf_colors =
 \ { 'fg':      ['fg', 'Normal'],

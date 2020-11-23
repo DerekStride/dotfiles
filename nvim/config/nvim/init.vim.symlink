@@ -43,6 +43,11 @@ augroup tmux_integration do
   au FocusGained * :checktime
 augroup END
 
+augroup dotfiles do
+  au!
+  au BufEnter *.vim.symlink :set filetype=vim
+augroup END
+
 let mapleader = " "
 
 "move line up or down .+1 - current line +1 \ == re-indent to match area
@@ -64,8 +69,9 @@ nnoremap <leader>Y gg"+yG
 nnoremap <leader>p "+p
 
 "open new tab with file explorer
-nnoremap <silent> <leader>e :Texplore<CR>
-nmap <silent> <leader>pv :wincmd v<bar> :Ex<bar> :vertical resize 30<CR>
+nnoremap <silent> <leader>e :Explore<CR>
+nnoremap <silent> <leader>t :tabn<CR>
+nnoremap <silent> <leader>pv :wincmd v<bar> :Ex<bar> :vertical resize 30<CR>
 
 "netrw config
 let g:netrw_banner = 0
