@@ -1,1 +1,1 @@
-nmap <leader>rt :!bundle exec ruby -Itest %<CR>
+nnoremap <buffer> <leader>rt :!bundle exec ruby -Itest %<CR>
