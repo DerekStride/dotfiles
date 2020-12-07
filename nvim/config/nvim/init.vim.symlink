@@ -50,29 +50,6 @@ augroup END
 
 let mapleader = " "
 
-"move line up or down .+1 - current line +1 \ == re-indent to match area
-nnoremap <silent> <leader>J :m .+1<CR>==
-nnoremap <silent> <leader>K :m .-2<CR>==
-"turn off highlights
-nnoremap <silent> <leader>nh :noh<CR>
-
-"move between windows
-nnoremap <silent> <leader>h :wincmd h<CR>
-nnoremap <silent> <leader>j :wincmd j<CR>
-nnoremap <silent> <leader>k :wincmd k<CR>
-nnoremap <silent> <leader>l :wincmd l<CR>
-
-" yank to system clipboard
-nnoremap <leader>y "+y
-vnoremap <leader>y "+y
-nnoremap <leader>Y gg"+yG
-nnoremap <leader>p "+p
-
-"open new tab with file explorer
-nnoremap <silent> <leader>e :Explore<CR>
-nnoremap <silent> <leader>t :tabn<CR>
-nnoremap <silent> <leader>pv :wincmd v<bar> :Ex<bar> :vertical resize 30<CR>
-
 "netrw config
 let g:netrw_banner = 0
 let g:netrw_winsize = 25
