@@ -30,3 +30,7 @@ nnoremap <silent> <leader>pv :wincmd v<bar> :Ex<bar> :vertical resize 30<CR>
 nnoremap <silent> <leader>ns :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/notes/scratch.md<CR>
 nnoremap <silent> <leader>nr :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/notes/rare-vim-commands.md<CR>
 nnoremap <silent> <leader>nt :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/notes/vim-tool-sharpening.md<CR>
+
+"lsp
+nnoremap <silent> <leader>ss :lua vim.lsp.buf.hover()<CR>
+nnoremap <leader>si :lua require('lsp_extensions').inlay_hints()<CR>
