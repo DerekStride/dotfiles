@@ -5,7 +5,7 @@ alias shortcuts='cat ~/.dotfiles/zsh/aliases.zsh; cat ~/.dotfiles/git/aliases.zs
 alias reload!='. ~/.zshrc'
 alias myip='curl ip.appspot.com'
 
-alias notes="$EDITOR ~/Dropbox/Documents/Work/Shopify/notes"
+alias notes="cd $NOTES && $EDITOR ."
 alias g=git
 alias k=kubectl
 
