@@ -1,44 +1,3 @@
-syntax on
-filetype indent plugin on
-
-set exrc
-
-set number
-set relativenumber
-set tabstop=2
-set softtabstop=0
-set expandtab
-set shiftwidth=2
-set smarttab
-set smartindent
-set lcs=tab:>-
-set list
-set nowrap
-set autoread
-
-set hlsearch
-set incsearch
-set smartcase
-
-set hidden
-set noerrorbells
-set noswapfile
-set nobackup
-set undodir=~/.vim/undodir
-set undofile
-set termguicolors
-set scrolloff=8
-set noshowmode
-set completeopt=menuone,noinsert,noselect
-
-"auto reload files, :checktime will reload the file.
-"if using vim inside tmux this requires setting focus-events in your .tmux.conf with:
-"set -g focus-events on
-augroup tmux_integration do
-  au!
-  au FocusGained * :checktime
-augroup END
-
 augroup dotfiles do
   au!
   au BufEnter *.vim.symlink :set filetype=vim
@@ -50,17 +9,23 @@ let mapleader = " "
 let g:netrw_banner = 0
 let g:netrw_winsize = 25
 
-"completion-nvim disable auto-popup
-let g:completion_enable_auto_popup = 0
-
 call plug#begin(stdpath('data') . 'plugged')
+"fzf + ripgrep is what I used to navigate codebases; find my configuration in
+"$ZSH/nvim/runtime/plugin/fzf.vim
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+
+"A lightweight status bar
 Plug 'vim-airline/vim-airline'
+
+"Add my favourite colorscheme
 Plug 'dracula/vim', { 'as': 'dracula' }
 
+"`gcc` comments out a single line
 Plug 'https://tpope.io/vim/commentary'
 
+"Configure the neovim language server client; find my configuration in
+"$ZSH/nvim/runtime/plugin/lsp.vim
 Plug 'neovim/nvim-lspconfig'
 Plug 'nvim-lua/completion-nvim'
 Plug 'nvim-lua/lsp_extensions.nvim'
@@ -68,11 +33,7 @@ call plug#end()
 
 colorscheme dracula
 
+"Append custom runtime path from my dotfiles
 if exists("$ZSH")
   set runtimepath+=$ZSH/nvim/runtime
-  lua require("init")
 endif
-
-"ctags
-set tags=.git/tags;
-
