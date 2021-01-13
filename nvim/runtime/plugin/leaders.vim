@@ -29,8 +29,18 @@ nnoremap <silent> <leader>pv :wincmd v<bar> :Ex<bar> :vertical resize 30<CR>
 "notes
 nnoremap <silent> <leader>ns :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/notes/scratch.md<CR>
 nnoremap <silent> <leader>nr :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/notes/rare-vim-commands.md<CR>
-nnoremap <silent> <leader>nt :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/notes/vim-tool-sharpening.md<CR>
+nnoremap <silent> <leader>nw :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/notes/vim-tool-sharpening.md<CR>
+nnoremap <silent> <leader>nt :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/notes/todo.md<CR>
 
 "lsp
-nnoremap <silent> <leader>ss :lua vim.lsp.buf.hover()<CR>
-nnoremap <leader>si :lua require('lsp_extensions').inlay_hints()<CR>
+nnoremap <silent> <leader>sh :lua vim.lsp.buf.hover()<CR>
+nnoremap <silent> <leader>sd :lua vim.lsp.buf.definition()<CR>
+nnoremap <silent> <leader>si :lua vim.lsp.buf.implementation()<CR>
+nnoremap <silent> <leader>ssh :lua vim.lsp.buf.signature_help()<CR>
+nnoremap <silent> <leader>srr :lua vim.lsp.buf.references()<CR>
+nnoremap <silent> <leader>srn :lua vim.lsp.buf.rename()<CR>
+nnoremap <silent> <leader>sca :lua vim.lsp.buf.code_action()<CR>
+nnoremap <silent> <leader>ssd :lua vim.lsp.util.show_line_diagnostics(); vim.lsp.util.show_line_diagnostics()<CR>
+
+let g:completion_matching_strategy_list = ['exact', 'substring', 'fuzzy']
+let g:completion_matching_smart_case = 1
