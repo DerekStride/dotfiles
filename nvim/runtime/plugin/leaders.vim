@@ -1,6 +1,6 @@
-"move line up or down .+1 - current line +1 \ == re-indent to match area
-nnoremap <silent> <leader>J :m .+1<CR>==
-nnoremap <silent> <leader>K :m .-2<CR>==
+"move line up or down .+1 - current line +1 \ = re-indent to match area
+vnoremap <silent> J :m '>+1<CR>gv=gv
+vnoremap <silent> K :m '<-2<CR>gv=gv
 "turn off highlights
 nnoremap <silent> <leader>nh :noh<CR>
 
