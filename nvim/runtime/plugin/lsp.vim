@@ -4,7 +4,7 @@ let g:completion_matching_strategy_list = ['exact', 'substring', 'fuzzy']
 let g:completion_matching_smart_case = 1
 
 "completion-nvim disable auto-popup
-let g:completion_enable_auto_popup = 0
+" let g:completion_enable_auto_popup = 0
 
 nnoremap <silent> <leader>sh :lua vim.lsp.buf.hover()<CR>
 nnoremap <silent> <leader>sd :lua vim.lsp.buf.definition()<CR>
