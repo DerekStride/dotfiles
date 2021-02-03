@@ -3,8 +3,8 @@ set -g default-terminal 'tmux-256color'
 set -ga terminal-overrides ",tmux-256color:Tc"
 
 # split panes using s and v
-bind s split-window -v
-bind v split-window -h
+bind s split-window -v -c '#{pane_current_path}'
+bind v split-window -h -c '#{pane_current_path}'
 unbind '"'
 unbind %
 
