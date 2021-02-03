@@ -51,6 +51,9 @@ while [ "$#" -gt 0 ]; do
     shift
 
     case "$curr" in
+    "split")
+        tmux split-window -h -t 0 -l "33%" -d
+        ;;
     "--sfr")
         isWork || continue
         createSession sfr primary -c $STOREFRONT
