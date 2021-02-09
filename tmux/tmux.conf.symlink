@@ -17,11 +17,15 @@ bind-key Space resize-pane -Z
 # use vi keys in copy mode
 setw -g mode-keys vi
 
-# pane movement shortcuts (same as vim)
-bind h select-pane -L
-bind j select-pane -D
-bind k select-pane -U
-bind l select-pane -R
+# Smart pane switching with awareness of Vim splits.
+# See: https://github.com/christoomey/vim-tmux-navigator
+is_vim="ps -o state= -o comm= -t '#{pane_tty}' | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|n?vim?x?)(diff)?$'"
+
+bind-key h if-shell "$is_vim" 'send-keys C-b h' 'select-pane -L'
+bind-key j if-shell "$is_vim" 'send-keys C-b j' 'select-pane -D'
+bind-key k if-shell "$is_vim" 'send-keys C-b k' 'select-pane -U'
+bind-key l if-shell "$is_vim" 'send-keys C-b l' 'select-pane -R'
+bind-key \\ if-shell "$is_vim" 'send-keys C-\\'  'select-pane -l'
 
 # active pane is a different colour
 set -g window-style "fg=terminal,bg=#424450"

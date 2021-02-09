@@ -4,11 +4,6 @@ vnoremap <silent> K :m '<-2<CR>gv=gv
 "turn off highlights
 nnoremap <silent> <leader>nh :noh<CR>
 
-"move between windows
-nnoremap <silent> <leader>h :wincmd h<CR>
-nnoremap <silent> <leader>j :wincmd j<CR>
-nnoremap <silent> <leader>k :wincmd k<CR>
-nnoremap <silent> <leader>l :wincmd l<CR>
 "rotate windows
 nnoremap <silent> <leader>H :wincmd H<CR>
 nnoremap <silent> <leader>J :wincmd J<CR>

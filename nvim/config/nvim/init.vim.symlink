@@ -19,6 +19,9 @@ Plug 'dracula/vim', { 'as': 'dracula' }
 "`gcc` comments out a single line
 Plug 'https://tpope.io/vim/commentary'
 
+"tmux aware pane / split switching
+Plug 'christoomey/vim-tmux-navigator'
+
 "Configure the neovim language server client; find my configuration in
 "$ZSH/nvim/runtime/plugin/lsp.vim
 Plug 'neovim/nvim-lspconfig'
