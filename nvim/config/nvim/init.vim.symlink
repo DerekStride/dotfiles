@@ -22,6 +22,9 @@ Plug 'https://tpope.io/vim/commentary'
 "tmux aware pane / split switching
 Plug 'christoomey/vim-tmux-navigator'
 
+"tmux scripting from vim
+Plug 'benmills/vimux'
+
 "Configure the neovim language server client; find my configuration in
 "$ZSH/nvim/runtime/plugin/lsp.vim
 Plug 'neovim/nvim-lspconfig'
