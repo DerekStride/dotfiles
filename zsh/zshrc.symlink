@@ -1,11 +1,16 @@
 # shortcut to this dotfiles path is $ZSH
-export ZSH=$HOME/.dotfiles
+if [ $SPIN ]
+then
+  export ZSH=$HOME/dotfiles
+else
+  export ZSH=$HOME/.dotfiles
+fi
 
 # your project folder that we can `c [tab]` to
 export PROJECTS=~/src
 
 # all of our zsh files
-typeset -U config_files
+declare -U config_files
 config_files=($ZSH/**/*.zsh)
 
 # load the path files
