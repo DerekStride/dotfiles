@@ -1,6 +1,4 @@
 # Local/private config goes in the include
-[include]
-        path = ~/.gitconfig.local
 [hub]
         protocol = https
 [user]
@@ -38,4 +36,6 @@
 [init]
         templatedir = ~/.git-templates
 [pull]
-	rebase = true
+        rebase = true
+[include]
+        path = ~/.gitconfig.local
