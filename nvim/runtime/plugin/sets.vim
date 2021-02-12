@@ -11,7 +11,7 @@ set expandtab
 set shiftwidth=2
 set smarttab
 set smartindent
-set lcs=tab:>-
+set lcs=tab:>-,trail:-,nbsp:%
 set list
 set nowrap
 set autoread
