@@ -1,6 +1,6 @@
-nnoremap <buffer> <leader>rt :!cargo test <cword><CR>
-nnoremap <buffer> <leader>rf :!cargo test %:t:r<CR>
-nnoremap <buffer> <leader>ra :!cargo test<CR>
+nnoremap <buffer> <leader>rt :call VimuxRunCommand("clear; cargo test " . expand('<cword>'))<CR>
+nnoremap <buffer> <leader>rf :call VimuxRunCommand("clear; cargo test " . expand('%:t:r'))<CR>
+nnoremap <buffer> <leader>ra :call VimuxRunCommand("clear; cargo test")<CR>
 
 augroup lsp_conifg do
   au!
