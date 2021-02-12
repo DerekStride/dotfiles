@@ -36,5 +36,5 @@ colorscheme dracula
 
 "Append custom runtime path from my dotfiles
 if exists("$ZSH")
-  set runtimepath+=$ZSH/nvim/runtime
+  set runtimepath^=$ZSH/nvim/runtime
 endif
