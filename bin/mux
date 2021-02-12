@@ -46,15 +46,17 @@ isWork() {
   return 0
 }
 
+if [ "$1" == "run" ]; then
+  shift
+  mux-run $@
+  exit $?
+fi
+
 while [ "$#" -gt 0 ]; do
     curr=$1
     shift
 
     case "$curr" in
-    "run")
-        tmux send-keys -t {right} $@ ENTER
-        exit 0
-        ;;
     "split")
         tmux split-window -h -t 0 -l "33%" -d
         ;;

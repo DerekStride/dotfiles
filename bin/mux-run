@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+while [ "$#" -gt 0 ]; do
+    tmux send-keys -t {right} $1 SPACE
+    shift
+done
+
+tmux send-keys -t {right} ENTER
