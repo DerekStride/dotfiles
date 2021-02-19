@@ -3,8 +3,9 @@ lua require("lsp_setup")
 let g:completion_matching_strategy_list = ['exact', 'substring', 'fuzzy']
 let g:completion_matching_smart_case = 1
 
-"completion-nvim disable auto-popup
-" let g:completion_enable_auto_popup = 0
+" Use <Tab> and <S-Tab> to navigate through popup menu
+inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 nnoremap <silent> <leader>sh :lua vim.lsp.buf.hover()<CR>
 nnoremap <silent> <leader>sd :lua vim.lsp.buf.definition()<CR>
