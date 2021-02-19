@@ -67,15 +67,17 @@ rb_prompt() {
   fi
 }
 
-directory_name() {
-  echo "%{$fg_bold[cyan]%}%1/%\/%{$reset_color%} "
-}
-
 return_val() {
   echo "%{$fg[yellow]%}%?%{$reset_color%} " 
 }
 
-export PROMPT=$'in $(directory_name) › '
+# If the current path, with prefix replacement, has 3 or more elements `%3~`
+# then return the directory we're in `%1/` else return the whole path `%2~`.
+#
+# The `~` in `%3~` means the current working directory but if it starts with
+# $HOME, that part is replaced by a ‘~’. Changing it to `%3/` would not do the
+# substitution, like we do with `%1/`.
+export PROMPT=$' %{$fg_bold[green]%}%(3~|%1/|%2~)%{$reset_color%} '
 set_prompt () {
   export RPROMPT="%{$fg_bold[cyan]%}%{$reset_color%}"
 }
