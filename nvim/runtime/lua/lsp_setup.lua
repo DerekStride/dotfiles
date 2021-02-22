@@ -4,6 +4,11 @@ require('lspconfig').rust_analyzer.setup {
   on_attach = on_attach
 }
 
+require('lspconfig').sorbet.setup {
+  on_attach = on_attach,
+  cmd = {"bundle", "exec", "srb", "tc", "--lsp"}
+}
+
 local system_name
 if vim.fn.has("mac") == 1 then
   system_name = "macOS"
