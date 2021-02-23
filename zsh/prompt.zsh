@@ -77,7 +77,7 @@ return_val() {
 # The `~` in `%3~` means the current working directory but if it starts with
 # $HOME, that part is replaced by a ‘~’. Changing it to `%3/` would not do the
 # substitution, like we do with `%1/`.
-export PROMPT=$' %{$fg_bold[green]%}%(3~|%1/|%2~)%{$reset_color%} '
+export PROMPT=$' %{$fg_bold[green]%}%(3~|%1/|%2~)%{$reset_color%} › '
 set_prompt () {
   export RPROMPT="%{$fg_bold[cyan]%}%{$reset_color%}"
 }
