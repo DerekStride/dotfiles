@@ -6,4 +6,12 @@ autoload colors && colors
 # The `~` in `%3~` means the current working directory but if it starts with
 # $HOME, that part is replaced by a ‘~’. Changing it to `%3/` would not do the
 # substitution, like we do with `%1/`.
-export PROMPT=$'%{$fg_bold[green]%}➜%{$reset_color%} %{$fg_bold[blue]%}%(3~|%1/|%2~)%{$reset_color%} '
+directory_name() {
+  echo "%{$fg_bold[blue]%}%(3~|%1/|%2~)%{$reset_color%}"
+}
+
+prompt_arrow() {
+  echo "%{$fg_bold[green]%}➜%{$reset_color%}"
+}
+
+export PROMPT=$'$(prompt_arrow) $(directory_name) '
