@@ -33,6 +33,7 @@ Plug 'nvim-lua/lsp_extensions.nvim'
 
 "Add tree-sitter for better highlighting
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'nvim-treesitter/completion-treesitter'
 call plug#end()
 
 colorscheme dracula
