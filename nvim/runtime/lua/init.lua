@@ -1,1 +1,1 @@
-print("loaded init.lua")
+require('treesitter')
