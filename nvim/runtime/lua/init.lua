@@ -1,3 +1,3 @@
-require('treesitter')
-require('telescope-config')
-require('lsp-setup')
+require('derek/treesitter')
+require('derek/lsp')
+require('derek/telescope')
