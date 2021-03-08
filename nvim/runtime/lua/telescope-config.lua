@@ -5,10 +5,7 @@ require('telescope').setup {
   defaults = {
     prompt_prefix = ' > ',
 
-    layout_strategy = 'horizontal',
-    selection_strategy = "reset",
     sorting_strategy = "ascending",
-    scroll_strategy = "cycle",
     prompt_position = "top",
 
     mappings = {
@@ -19,6 +16,7 @@ require('telescope').setup {
     },
 
     file_sorter = sorters.get_fzy_sorter,
+    vimgrep_arguments = {'rg', '--column', '--line-number', '--no-heading', '--color=never', '--smart-case'}
   },
 
   extensions = {
@@ -33,3 +31,5 @@ require('telescope').setup {
     },
   },
 }
+
+require('telescope').load_extension('fzy_native')
