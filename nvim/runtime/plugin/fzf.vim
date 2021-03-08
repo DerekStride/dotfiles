@@ -23,7 +23,7 @@ endfunction
 command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
 
 "fzf config
-nnoremap <silent> <C-p> :Files<CR>
+nnoremap <silent> <leader>zp :Files<CR>
 nnoremap <silent> <leader>zf :RG<CR>
 nnoremap <silent> <leader>zb :Buffers<CR>
 nnoremap <silent> <leader>zh :Helptags<CR>
