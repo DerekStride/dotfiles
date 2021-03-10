@@ -1,6 +1,3 @@
-syntax on
-filetype indent plugin on
-
 set exrc
 
 set number

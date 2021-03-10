@@ -4,5 +4,5 @@ nnoremap <buffer> <leader>ra :call VimuxRunCommand("cargo test")<CR>
 
 augroup lsp_conifg do
   au!
-  au BufEnter,BufWinEnter,TabEnter *.rs :lua require('lsp_extensions').inlay_hints{}
+  "au BufEnter,BufWinEnter,TabEnter *.rs :lua require('lsp_extensions').inlay_hints{}
 augroup END
