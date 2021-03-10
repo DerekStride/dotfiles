@@ -1,15 +1,3 @@
-let g:completion_matching_strategy_list = ['exact', 'substring', 'fuzzy']
-let g:completion_matching_smart_case = 1
-let g:completion_chain_complete_list = [
-    \{'complete_items': ['lsp', 'snippet', 'ts']},
-    \{'mode': '<c-p>'},
-    \{'mode': '<c-n>'}
-\]
-
-" Use <Tab> and <S-Tab> to navigate through popup menu
-inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-
 nnoremap <silent> <leader>sh :lua vim.lsp.buf.hover()<CR>
 nnoremap <silent> <leader>sd :lua vim.lsp.buf.definition()<CR>
 nnoremap <silent> <leader>si :lua vim.lsp.buf.implementation()<CR>

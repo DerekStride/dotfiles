@@ -1,11 +1,8 @@
-local on_attach = require('completion').on_attach
+local lspconfig = require('lspconfig')
 
-require('lspconfig').rust_analyzer.setup {
-  on_attach = on_attach
-}
+lspconfig.rust_analyzer.setup {}
 
-require('lspconfig').sorbet.setup {
-  on_attach = on_attach,
+lspconfig.sorbet.setup {
   cmd = {"bundle", "exec", "srb", "tc", "--lsp"}
 }
 
@@ -24,8 +21,7 @@ end
 local sumneko_root_path = vim.env.PROJECTS..'/github.com/sumneko/lua-language-server'
 local sumneko_binary = sumneko_root_path.."/bin/"..system_name.."/lua-language-server"
 
-require('lspconfig').sumneko_lua.setup {
-  on_attach = on_attach,
+lspconfig.sumneko_lua.setup {
   cmd = {sumneko_binary, "-E", sumneko_root_path .. "/main.lua"};
   settings = {
     Lua = {

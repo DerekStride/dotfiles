@@ -25,7 +25,7 @@ return require('packer').startup(function()
   --Configure the neovim language server client; find my configuration in
   --$ZSH/nvim/runtime/plugin/lsp.vim
   use { 'neovim/nvim-lspconfig' }
-  use { 'nvim-lua/completion-nvim' }
+  use { 'hrsh7th/nvim-compe' }
   -- use { 'nvim-lua/lsp_extensions.nvim' }
 
   --Add tree-sitter for better highlighting

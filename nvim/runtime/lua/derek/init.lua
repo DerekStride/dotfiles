@@ -1,4 +1,6 @@
+require('derek/globals')
 require('derek/plugins')
+require('derek/completion')
 require('derek/treesitter')
 require('derek/lsp')
 require('derek/telescope')
