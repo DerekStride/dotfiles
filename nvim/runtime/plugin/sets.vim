@@ -15,6 +15,7 @@ set lcs=tab:>-,trail:-,nbsp:%
 set list
 set nowrap
 set autoread
+set splitright
 
 set hlsearch
 set incsearch
