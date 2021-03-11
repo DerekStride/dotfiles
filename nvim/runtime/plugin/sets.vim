@@ -1,5 +1,3 @@
-set exrc
-
 set number
 set relativenumber
 set tabstop=2
