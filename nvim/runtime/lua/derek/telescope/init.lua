@@ -1,7 +1,25 @@
+local has_telescope, telescope = pcall(require, 'telescope')
+local builtin = require('telescope/builtin')
+
+if not has_telescope then
+  return
+end
+
+local should_reload = false
+local reloader = function()
+  if should_reload then
+    RELOAD('plenary')
+    RELOAD('popup')
+    RELOAD('telescope')
+  end
+end
+
+reloader()
+
 local actions = require('telescope.actions')
 local sorters = require('telescope.sorters')
 
-require('telescope').setup {
+telescope.setup {
   defaults = {
     prompt_prefix = ' > ',
 
@@ -15,8 +33,21 @@ require('telescope').setup {
       },
     },
 
+    layout_defaults = {
+      horizontal = {
+        preview_width = 0.6,
+      },
+    },
+
     file_sorter = sorters.get_fzy_sorter,
-    vimgrep_arguments = {'rg', '--column', '--line-number', '--no-heading', '--color=never', '--smart-case'}
+    vimgrep_arguments = {
+      'rg',
+      '--column',
+      '--line-number',
+      '--no-heading',
+      '--color=never',
+      '--smart-case'
+    },
   },
 
   extensions = {
@@ -32,4 +63,30 @@ require('telescope').setup {
   },
 }
 
-require('telescope').load_extension('fzy_native')
+telescope.load_extension('fzy_native')
+
+local M = {}
+
+function M.dotfiles()
+  require('telescope.builtin').find_files {
+    prompt_title = "~ dotfiles ~",
+    shorten_path = false,
+    cwd = "$ZSH",
+
+    layout_config = {
+      preview_width = 0.6,
+    },
+  }
+end
+
+return setmetatable({}, {
+  __index = function(_, k)
+    reloader()
+
+    if M[k] then
+      return M[k]
+    else
+      return require('telescope.builtin')[k]
+    end
+  end
+})
