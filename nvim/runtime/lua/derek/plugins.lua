@@ -29,7 +29,7 @@ return require('packer').startup(function()
   -- use { 'nvim-lua/lsp_extensions.nvim' }
 
   --Add tree-sitter for better highlighting
-  use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
+  use { '~/src/github.com/DerekStride/nvim-treesitter', run = ':TSUpdate', branch = 'sql-parser' }
   use { 'nvim-treesitter/completion-treesitter' }
   -- Useful for :TSHighlightCapturesUnderCursor and :TSPlaygroundToggle to see
   -- how tree-sitter is parsing the file.
