@@ -1,4 +1,4 @@
 (heredoc_body
- (heredoc_content) @sql
+ (heredoc_content) @content
  (heredoc_end) @language
  (#downcase! @language))

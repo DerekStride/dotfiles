@@ -2,20 +2,15 @@ local read_query = function(filename)
   return table.concat(vim.fn.readfile(vim.fn.expand(filename)), "\n")
 end
 
-local query = require('vim/treesitter/query')
-query.add_directive('downcase!', function(match, _, _, pred, metadata)
-  local offset_node = match[pred[2]]
-  P(pred)
-  P(metadata)
+local query = require('vim.treesitter.query')
+query.add_directive('downcase!', function(match, _, bufnr, pred, metadata)
+  local node = match[pred[2]]
+  local text = query.get_node_text(node, bufnr)
+  local language = string.lower(text)
+  metadata[pred[2]]['language'] = language
 end)
-query.add_predicate('downcase?', function(match, _, _, pred, metadata)
-  P(pred)
-  P(metadata)
-end)
-P(query.list_predicates())
 
-
-require('nvim-treesitter/configs').setup {
+require('nvim-treesitter.configs').setup {
   ensure_installed = { 'ruby', 'rust', 'bash', 'lua', 'query', 'sql', 'html' }, -- one of "all", "maintained" (parsers with maintainers), or a list of languages
   highlight = {
     enable = true,
@@ -41,4 +36,3 @@ require('nvim-treesitter/configs').setup {
     lint_events = {"BufWrite", "CursorHold"},
   }
 }
-
