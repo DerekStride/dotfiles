@@ -14,7 +14,7 @@ curl -L https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
 chmod +x /tmp/nvim.appimage
 /tmp/nvim.appimage --appimage-extract
 [ -d /squashfs-root ] || sudo mv squashfs-root /
-[ -f /usr/bin/nvim ] || sudo ln -s /squashfs-root/AppRun /usr/bin/nvim
+[ -f /usr/local/bin/nvim ] || sudo ln -s /squashfs-root/AppRun /usr/local/bin/nvim
 
 # Install fzf and bat
 sudo apt-get install -y fzf bat
