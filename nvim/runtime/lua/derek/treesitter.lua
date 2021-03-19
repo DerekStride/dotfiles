@@ -10,7 +10,7 @@ require('nvim-treesitter.configs').setup {
   },
   parsers = {
     lua = {
-      injections = read_query("~/.dotfiles/nvim/tree-sitter/queries/lua/injections.scm"),
+      injections = read_query("$ZSH/nvim/tree-sitter/queries/lua/injections.scm"),
     }
   },
   playground = {

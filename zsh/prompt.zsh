@@ -7,11 +7,17 @@ autoload colors && colors
 # $HOME, that part is replaced by a ‘~’. Changing it to `%3/` would not do the
 # substitution, like we do with `%1/`.
 directory_name() {
-  echo "%{$fg_bold[blue]%}%(3~|%1/|%2~)%{$reset_color%}"
+  echo "%{$fg_bold[blue]%}%(3~|%1/|%2~)%{$reset_color%} "
 }
 
 prompt_arrow() {
-  echo "%{$fg_bold[green]%}➜%{$reset_color%}"
+  echo "%{$fg_bold[green]%}➜%{$reset_color%} "
 }
 
-export PROMPT=$'$(prompt_arrow) $(directory_name) '
+prompt_machine_info() {
+  if [[ -n "${SSH_CONNECTION-}${SSH_CLIENT-}${SSH_TTY-}" ]] || (( EUID == 0 )); then
+    echo "%{$fg_bold[magenta]%}%n%{$reset_color%} "
+  fi
+}
+
+export PROMPT=$'$(prompt_arrow)$(prompt_machine_info)$(directory_name)'
