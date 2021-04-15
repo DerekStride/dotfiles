@@ -1,5 +1,5 @@
 local has_telescope, telescope = pcall(require, 'telescope')
-local builtin = require('telescope/builtin')
+local builtin = require('telescope.builtin')
 
 if not has_telescope then
   return
@@ -68,10 +68,22 @@ telescope.load_extension('fzy_native')
 local M = {}
 
 function M.dotfiles()
-  require('telescope.builtin').find_files {
+  builtin.find_files {
     prompt_title = "~ dotfiles ~",
     shorten_path = false,
     cwd = "$ZSH",
+
+    layout_config = {
+      preview_width = 0.6,
+    },
+  }
+end
+
+function M.storefront_gql()
+  builtin.find_files {
+    prompt_title = "~ storefront gQL ~",
+    shorten_path = false,
+    cwd = "$HOME/src/github.com/Shopify/storefront-renderer/storefront-graphql",
 
     layout_config = {
       preview_width = 0.6,
@@ -86,7 +98,7 @@ return setmetatable({}, {
     if M[k] then
       return M[k]
     else
-      return require('telescope.builtin')[k]
+      return builtin[k]
     end
   end
 })
