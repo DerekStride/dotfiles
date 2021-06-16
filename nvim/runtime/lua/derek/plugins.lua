@@ -7,9 +7,6 @@ return require('packer').startup(function()
   use { 'junegunn/fzf.vim' }
   use { 'junegunn/fzf', run = './install --all' }
 
-  --A lightweight status bar
-  use { 'vim-airline/vim-airline' }
-
   --Add my favourite colorscheme
   use { 'dracula/vim', as = 'dracula' }
 
