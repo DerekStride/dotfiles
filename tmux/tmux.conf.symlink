@@ -17,6 +17,8 @@ bind-key Space resize-pane -Z
 # use vi keys in copy mode
 setw -g mode-keys vi
 
+if-shell '[ -n "$SPIN" ]' 'source-file ~/.tmux-spin.conf; display "Loaded ~/.tmux-spin.conf"'
+
 # Smart pane switching with awareness of Vim splits.
 # See: https://github.com/christoomey/vim-tmux-navigator
 is_vim="ps -o state= -o comm= -t '#{pane_tty}' | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|n?vim?x?)(diff)?$'"
@@ -48,5 +50,5 @@ set -g @dracula-show-location false
 set -g @dracula-show-left-icon session
 
 # Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
-run '~/.tmux/plugins/tpm/tpm'
+if-shell '[ -z "$SPIN" ]' 'run "~/.tmux/plugins/tpm/tpm"'
 
