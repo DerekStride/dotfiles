@@ -22,7 +22,6 @@ telescope.setup {
     prompt_prefix = ' > ',
 
     sorting_strategy = "ascending",
-    prompt_position = "top",
 
     mappings = {
       i = {
@@ -31,10 +30,11 @@ telescope.setup {
       },
     },
 
-    layout_defaults = {
+    layout_config = {
       horizontal = {
         preview_width = 0.6,
       },
+      prompt_position = "top",
     },
 
     file_sorter = sorters.get_fzy_sorter,
