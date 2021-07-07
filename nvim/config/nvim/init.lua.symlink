@@ -13,4 +13,4 @@ cmd('set runtimepath^=$ZSH/nvim/runtime')
 
 require('derek')
 
-cmd('colorscheme dracula')
+cmd('silent! colorscheme dracula')
