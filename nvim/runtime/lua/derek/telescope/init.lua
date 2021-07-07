@@ -1,9 +1,7 @@
 local has_telescope, telescope = pcall(require, 'telescope')
 local builtin = require('telescope.builtin')
 
-if not has_telescope then
-  return
-end
+if not has_telescope then return end
 
 local should_reload = false
 local reloader = function()

@@ -1,4 +1,6 @@
-local lspconfig = require('lspconfig')
+local has_lspconfig, lspconfig = pcall(require, 'lspconfig')
+
+if not has_lspconfig then return end
 
 lspconfig.rust_analyzer.setup {}
 

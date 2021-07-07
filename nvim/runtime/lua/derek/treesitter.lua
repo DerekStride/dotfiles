@@ -1,8 +1,12 @@
+local has_treesitter, config = pcall(require, 'nvim-treesitter.configs')
+
+if not has_treesitter then return end
+
 local read_query = function(filename)
   return table.concat(vim.fn.readfile(vim.fn.expand(filename)), "\n")
 end
 
-require('nvim-treesitter.configs').setup {
+config.setup {
   ensure_installed = { 'ruby', 'rust', 'bash', 'lua', 'html', 'query' }, -- one of "all", "maintained" (parsers with maintainers), or a list of languages
   highlight = {
     enable = true,
