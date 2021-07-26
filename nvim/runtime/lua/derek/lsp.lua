@@ -4,6 +4,8 @@ if not has_lspconfig then return end
 
 lspconfig.rust_analyzer.setup {}
 
+lspconfig.tsserver.setup{}
+
 lspconfig.sorbet.setup {
   cmd = {"bundle", "exec", "srb", "tc", "--lsp"}
 }

@@ -70,7 +70,7 @@ if has_compe then
 
     source = {
       path = true;
-      buffer = true;
+      buffer = false;
       calc = true;
       vsnip = false;
       nvim_lsp = true;

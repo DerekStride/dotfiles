@@ -63,6 +63,7 @@ while [ "$#" -gt 0 ]; do
     "--sfr")
         isWork || continue
         createSession sfr primary -c $STOREFRONT
+        createWindow sfr gql -c $STOREFRONT
         ;;
     "--shopify")
         isWork || continue
