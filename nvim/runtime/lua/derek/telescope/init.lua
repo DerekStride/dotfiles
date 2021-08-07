@@ -72,6 +72,18 @@ function M.dotfiles()
   }
 end
 
+function M.storefront_framework()
+  builtin.find_files {
+    prompt_title = "~ Sfr Framework ~",
+    shorten_path = false,
+    cwd = "$HOME/src/github.com/Shopify/storefront-renderer/gems/sfr_framework",
+
+    layout_config = {
+      preview_width = 0.6,
+    },
+  }
+end
+
 function M.storefront_gql()
   builtin.find_files {
     prompt_title = "~ storefront gQL ~",
