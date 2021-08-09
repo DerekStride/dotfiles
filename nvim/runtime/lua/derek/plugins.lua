@@ -37,4 +37,11 @@ return require('packer').startup(function()
   use { 'nvim-lua/plenary.nvim' }
   use { 'nvim-telescope/telescope.nvim' }
   use { 'nvim-telescope/telescope-fzy-native.nvim' }
+
+  use { '/Users/derekstride/src/github.com/DerekStride/refactor.nvim',
+    requires = {
+      {"nvim-lua/plenary.nvim"},
+      {"nvim-treesitter/nvim-treesitter"}
+    }
+  }
 end)

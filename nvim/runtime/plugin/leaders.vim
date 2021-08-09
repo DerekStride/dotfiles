@@ -21,6 +21,9 @@ nnoremap <silent> <leader>e :Explore<CR>
 nnoremap <silent> <leader>t :tabe<CR>
 nnoremap <silent> <leader>pv :wincmd v<bar> :Ex<bar> :vertical resize 30<CR>
 
+nnoremap <silent> <leader>x :so %<CR>
+nnoremap <silent> <leader><leader>x :luafile %<CR>
+
 "notes
 nnoremap <silent> <leader>ns :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/notes/scratch.md<CR>
 nnoremap <silent> <leader>nr :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/notes/rare-vim-commands.md<CR>
