@@ -72,11 +72,23 @@ function M.dotfiles()
   }
 end
 
-function M.storefront_framework()
+function M.storefront_renderer()
   builtin.find_files {
-    prompt_title = "~ Sfr Framework ~",
+    prompt_title = "~ Storefront Renderer ~",
     shorten_path = false,
-    cwd = "$HOME/src/github.com/Shopify/storefront-renderer/gems/sfr_framework",
+    cwd = "$HOME/src/github.com/Shopify/storefront-renderer",
+
+    layout_config = {
+      preview_width = 0.6,
+    },
+  }
+end
+
+function M.sonic_framework()
+  builtin.find_files {
+    prompt_title = "~ Sonic ~",
+    shorten_path = false,
+    cwd = "$HOME/src/github.com/Shopify/storefront-renderer/gems/sonic",
 
     layout_config = {
       preview_width = 0.6,

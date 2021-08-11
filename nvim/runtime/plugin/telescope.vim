@@ -11,5 +11,6 @@ nnoremap <silent> <leader>fB <cmd>lua require('derek/telescope').builtin()<cr>
 nnoremap <silent> <leader>fh <cmd>lua require('derek/telescope').help_tags()<cr>
 nnoremap <silent> <leader>fs <cmd>lua require('derek/telescope').treesitter()<cr>
 nnoremap <silent> <leader>fg <cmd>lua require('derek/telescope').storefront_gql()<cr>
-nnoremap <silent> <leader>fr <cmd>lua require('derek/telescope').storefront_framework()<cr>
+nnoremap <silent> <leader>fj <cmd>lua require('derek/telescope').storefront_renderer()<cr>
+nnoremap <silent> <leader>fr <cmd>lua require('derek/telescope').sonic_framework()<cr>
 
