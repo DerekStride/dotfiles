@@ -58,9 +58,9 @@ while [ "$#" -gt 0 ]; do
 
     case "$curr" in
     "split")
-        tmuxVerMajor=$(tmux -V | sed "s/tmux \(.\)\..\w/\1/g")
-        tmuxVerMinor=$(tmux -V | sed "s/tmux .\.\(.\)\w/\1/g")
-        if [ $tmuxVerMajor -lt 3  -o $tmuxVerMinor -lt 1 ]; then
+        tmuxVerMajor=$(tmux -V | sed "s/tmux \(.\)\.../\1/g")
+        tmuxVerMinor=$(tmux -V | sed "s/tmux .\.\(.\)./\1/g")
+        if [ $tmuxVerMajor -lt 3 -o $tmuxVerMinor -lt 1 ]; then
           # Prior to tmux version 3.1 the -p flag was used for denoting the size as a percentage.
           # split-window [-l size | -p percentage]
           tmux split-window -h -t 0 -p 33 -d
