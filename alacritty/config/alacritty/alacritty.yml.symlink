@@ -273,4 +273,5 @@ key_bindings:
   - { key: Right,     mods: Alt,          chars: "\x1bf"                       } # one word right
   - { key: Left,      mods: Super,        chars: "\x1bOH",   mode: AppCursor   } # Home
   - { key: Right,     mods: Super,        chars: "\x1bOF",   mode: AppCursor   } # End
+  - { key: Q,         mods: Control,      chars: "\x11" }
 

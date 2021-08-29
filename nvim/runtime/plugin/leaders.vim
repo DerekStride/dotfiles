@@ -29,3 +29,31 @@ nnoremap <silent> <leader>ns :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/
 nnoremap <silent> <leader>nr :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/notes/rare-vim-commands.md<CR>
 nnoremap <silent> <leader>nw :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/notes/vim-tool-sharpening.md<CR>
 nnoremap <silent> <leader>nt :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/notes/todo.md<CR>
+
+" quickfix
+nnoremap <silent> <C-j> :cnext<CR>zz
+nnoremap <silent> <C-k> :cprev<CR>zz
+nnoremap <silent> <C-q> :call ToggleQFList(1)<CR>
+
+let g:the_primeagen_qf_l = 0
+let g:the_primeagen_qf_g = 0
+
+fun! ToggleQFList(global)
+  if a:global
+    if g:the_primeagen_qf_g == 1
+      let g:the_primeagen_qf_g = 0
+      cclose
+    else
+      let g:the_primeagen_qf_g = 1
+      copen
+    end
+  else
+    if g:the_primeagen_qf_l == 1
+      let g:the_primeagen_qf_l = 0
+      lclose
+    else
+      let g:the_primeagen_qf_l = 1
+      lopen
+    end
+  endif
+endfun
