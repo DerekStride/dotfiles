@@ -4,8 +4,6 @@
 [user]
         name = derekstride
         email = djgstride@gmail.com
-[alias]
-        co = checkout
 [color]
         diff = auto
         status = auto
