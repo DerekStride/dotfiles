@@ -1,3 +1,5 @@
+vim.fn.setenv("MACOSX_DEPLOYMENT_TARGET", "10.15")
+
 return require('packer').startup(function()
   -- Packer can manage itself as an optional plugin
   use { 'wbthomason/packer.nvim' }
@@ -23,7 +25,9 @@ return require('packer').startup(function()
   --$ZSH/nvim/runtime/plugin/lsp.vim
   use { 'neovim/nvim-lspconfig' }
   use { 'hrsh7th/nvim-compe' }
-  -- use { 'nvim-lua/lsp_extensions.nvim' }
+  use { 'hrsh7th/cmp-nvim-lsp' }
+  use { 'hrsh7th/nvim-cmp' }
+  use { 'nvim-lua/lsp_extensions.nvim' }
 
   --Add tree-sitter for better highlighting
   use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
@@ -44,4 +48,6 @@ return require('packer').startup(function()
       {"nvim-treesitter/nvim-treesitter"}
     }
   }
+
+  -- use_rocks { "lua-cjson", "lua-resty-prettycjson" }
 end)

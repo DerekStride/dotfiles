@@ -1,13 +1,19 @@
 local has_lspconfig, lspconfig = pcall(require, 'lspconfig')
+local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
 
 if not has_lspconfig then return end
 
-lspconfig.rust_analyzer.setup {}
+lspconfig.rust_analyzer.setup {
+  capabilities = capabilities,
+}
 
-lspconfig.tsserver.setup{}
+lspconfig.tsserver.setup {
+  capabilities = capabilities,
+}
 
 lspconfig.sorbet.setup {
-  cmd = {"bundle", "exec", "srb", "tc", "--lsp"}
+  cmd = {"bundle", "exec", "srb", "tc", "--lsp"},
+  capabilities = capabilities,
 }
 
 local system_name
@@ -27,6 +33,7 @@ local sumneko_binary = sumneko_root_path.."/bin/"..system_name.."/lua-language-s
 
 lspconfig.sumneko_lua.setup {
   cmd = {sumneko_binary, "-E", sumneko_root_path .. "/main.lua"};
+  capabilities = capabilities,
   settings = {
     Lua = {
       runtime = {
@@ -37,7 +44,7 @@ lspconfig.sumneko_lua.setup {
       },
       diagnostics = {
         -- Get the language server to recognize the `vim` global
-        globals = {'vim', 'describe', 'it'},
+        globals = {'vim', 'describe', 'it', 'use'},
       },
       workspace = {
         -- Make the server aware of Neovim runtime files
