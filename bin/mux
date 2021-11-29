@@ -84,11 +84,14 @@ while [ "$#" -gt 0 ]; do
         isWork || continue
         createSession nginx primary -c $NGINX
         ;;
-      "--dot")
+    "--dot")
         createSession main-alacritty primary
         createWindow main-alacritty dot -c $ZSH
         createWindow main-alacritty notes -c $NOTES
         createWindow main-alacritty zettel -c $ZK_PATH
+        ;;
+    "--site")
+        createWindow main-alacritty site -c $PROJECTS/github.com/derekstride/derekstride.github.io
         ;;
     *) echo "Unavailable command... $curr"
     esac
