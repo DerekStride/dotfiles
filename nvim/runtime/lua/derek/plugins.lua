@@ -23,10 +23,12 @@ return require('packer').startup(function()
 
   --Configure the neovim language server client; find my configuration in
   --$ZSH/nvim/runtime/plugin/lsp.vim
-  use { 'neovim/nvim-lspconfig' }
-  use { 'hrsh7th/nvim-compe' }
-  use { 'hrsh7th/cmp-nvim-lsp' }
   use { 'hrsh7th/nvim-cmp' }
+  use { "hrsh7th/cmp-nvim-lua" }
+  use { 'hrsh7th/cmp-nvim-lsp' }
+  use { 'neovim/nvim-lspconfig' }
+  use { 'hrsh7th/nvim-cmp' }
+  use { 'L3MON4D3/LuaSnip' }
   use { 'nvim-lua/lsp_extensions.nvim' }
 
   --Add tree-sitter for better highlighting

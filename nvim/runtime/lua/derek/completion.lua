@@ -13,17 +13,22 @@ local has_cmp, cmp = pcall(require, 'cmp')
 if has_cmp then
   cmp.setup {
     mapping = {
-      ['<Tab>'] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Insert }),
-      ['<S-Tab>'] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Insert }),
-      ['<Esc>'] = cmp.mapping.close(),
+      -- ['<Tab>'] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Insert }),
+      -- ['<S-Tab>'] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Insert }),
       ['<CR>'] = cmp.mapping.confirm({ select = true }),
     },
     sources = {
+      { name = 'luasnip' },
       { name = 'nvim_lsp' },
       { name = 'nvim_lua' },
     },
     completion = {
       keyword_length = 3,
+    },
+    snippet = {
+      expand = function(args)
+        require'luasnip'.lsp_expand(args.body)
+      end
     },
   }
 end
