@@ -46,5 +46,20 @@ if has_cmp then
         },
       },
     },
+    sorting = {
+      comparators = {
+        cmp.config.compare.offset,
+        cmp.config.compare.exact,
+        cmp.config.compare.score,
+        -- cmp.config.compare.kind places snippets above other types.
+        -- I prefer to have snippets listed last.
+        function(entry1, entry2)
+          return cmp.config.compare.kind(entry2, entry1)
+        end,
+        cmp.config.compare.sort_text,
+        cmp.config.compare.length,
+        cmp.config.compare.order,
+      },
+    },
   }
 end
