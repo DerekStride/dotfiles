@@ -25,8 +25,3 @@ command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
 "fzf config
 nnoremap <silent> <leader>zp :Files<CR>
 nnoremap <silent> <leader>zf :RG<CR>
-nnoremap <silent> <leader>zb :Buffers<CR>
-nnoremap <silent> <leader>zh :Helptags<CR>
-nnoremap <silent> <leader>zy :History:<CR>
-"run tags matching the current word jump directly if there is only one match
-nnoremap <silent> <leader>zt :call fzf#vim#tags('^' . expand('<cword>'), {'options': '--exact --select-1 --exit-0 +i'})<CR>

@@ -2,6 +2,7 @@ local cmd = vim.cmd
 local g = vim.g
 
 -- opt.completeopt = { "menuone" , "noinsert", "noselect" }
+-- vim.opt.completeopt = { "menuone" , "noinsert", "noselect" }
 
 -- Don't show the dumb matching stuff.
 cmd([[set shortmess+=c]])

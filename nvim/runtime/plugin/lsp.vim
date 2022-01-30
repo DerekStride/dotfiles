@@ -5,5 +5,5 @@ nnoremap <silent> <leader>ssh :lua vim.lsp.buf.signature_help()<CR>
 nnoremap <silent> <leader>srr :lua vim.lsp.buf.references()<CR>
 nnoremap <silent> <leader>srn :lua vim.lsp.buf.rename()<CR>
 nnoremap <silent> <leader>sca :lua vim.lsp.buf.code_action()<CR>
-nnoremap <silent> <leader>ssd :lua vim.lsp.util.show_line_diagnostics(); vim.lsp.util.show_line_diagnostics()<CR>
+nnoremap <silent> <leader>sn :lua vim.lsp.diagnostic.goto_next()<CR>
 

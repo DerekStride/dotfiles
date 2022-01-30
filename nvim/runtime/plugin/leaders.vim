@@ -19,7 +19,6 @@ nnoremap <leader>p "+p
 "open new tab with file explorer
 nnoremap <silent> <leader>e :Explore<CR>
 nnoremap <silent> <leader>t :tabe<CR>
-nnoremap <silent> <leader>pv :wincmd v<bar> :Ex<bar> :vertical resize 30<CR>
 
 nnoremap <silent> <leader>x :so %<CR>
 nnoremap <silent> <leader><leader>x :luafile %<CR>
@@ -33,7 +32,7 @@ nnoremap <silent> <leader>nt :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/
 " quickfix
 nnoremap <silent> <C-j> :cnext<CR>zz
 nnoremap <silent> <C-k> :cprev<CR>zz
-nnoremap <silent> <C-q> :call ToggleQFList(1)<CR>
+" nnoremap <silent> <C-q> :call ToggleQFList(1)<CR>
 
 let g:the_primeagen_qf_l = 0
 let g:the_primeagen_qf_g = 0
