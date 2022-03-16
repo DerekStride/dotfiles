@@ -58,5 +58,5 @@ bindkey "^[[B" down-line-or-beginning-search # Down
 # of your main dotfiles repository (which may be public, like this one), but
 # you'll have access to them in your scripts.
 [ -f ~/.localrc ] && source ~/.localrc
-
+[ -f ~/.zshrc.local ] && source ~/.zshrc.local
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
