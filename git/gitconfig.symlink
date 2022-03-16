@@ -26,11 +26,6 @@
         #
         # Setting to git 2.0 default to surpress warning message
         default = simple
-[diff]
-        algorithm = patience
-
-[protocol]
-        version = 2
 [init]
         templatedir = ~/.git-templates
         defaultBranch = main
