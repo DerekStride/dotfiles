@@ -6,7 +6,7 @@ tap 'homebrew/cask-fonts'
 brew 'rg'
 brew 'bat'
 brew 'fzf'
-brew 'neovim'
+brew 'tmux'
 brew 'coreutils'
 cask 'font-victor-mono'
 
