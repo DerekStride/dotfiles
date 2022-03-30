@@ -87,8 +87,8 @@ while [ "$#" -gt 0 ]; do
     "--dot")
         createSession main-alacritty primary
         createWindow main-alacritty dot -c $ZSH
-        createWindow main-alacritty notes -c $NOTES
-        createWindow main-alacritty zettel -c $ZK_PATH
+        [ -n "$NOTES" ] && createWindow main-alacritty notes -c $NOTES
+        [ -n "$ZK_PATH" ] && createWindow main-alacritty zettel -c $ZK_PATH
         ;;
     "--site")
         createWindow main-alacritty site -c $PROJECTS/github.com/derekstride/derekstride.github.io
