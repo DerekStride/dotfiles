@@ -1,19 +1,20 @@
 local has_lspconfig, lspconfig = pcall(require, 'lspconfig')
 local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+local keymap = vim.keymap
 
 if not has_lspconfig then return end
 
-local on_attach = function()
-  vim.set("n", "K", vim.lsp.buf.hover, {buffer=0})
-  vim.set("n", "gd", vim.lsp.buf.definition, {buffer=0})
-  vim.set("n", "gT", vim.lsp.buf.type_definition, {buffer=0})
-  vim.set("n", "gi", vim.lsp.buf.implementation, {buffer=0})
-  vim.set("n", "<leader>rn", vim.lsp.buf.rename, {buffer=0})
-  vim.set("n", "<leader>rr", "<cmd>Telescope lsp_references<cr>", {buffer=0})
-  vim.set("n", "<leader>dl", "<cmd>Telescope diagnostics<cr>", {buffer=0})
-  vim.set("n", "<leader>dn", vim.diagnostics.next, {buffer=0})
-  vim.set("n", "<leader>dp", vim.diagnostics.prev, {buffer=0})
-  vim.set("n", "<leader>ca", "<cmd>Telescope lsp_code_actions<cr>", {buffer=0})
+local on_attach = function(client, bufnr)
+  keymap.set("n", "K", vim.lsp.buf.hover, { buffer = bufnr, silent = true })
+  keymap.set("n", "gd", vim.lsp.buf.definition, { buffer = bufnr, silent = true })
+  keymap.set("n", "gT", vim.lsp.buf.type_definition, { buffer = bufnr, silent = true })
+  keymap.set("n", "gi", vim.lsp.buf.implementation, { buffer = bufnr, silent = true })
+  keymap.set("n", "<leader>rn", vim.lsp.buf.rename, { buffer = bufnr, silent = true })
+  keymap.set("n", "<leader>rr", "<cmd>Telescope lsp_references<cr>", { buffer = bufnr, silent = true })
+  keymap.set("n", "<leader>dl", "<cmd>Telescope diagnostics<cr>", { buffer = bufnr, silent = true })
+  keymap.set("n", "<leader>dj", vim.diagnostic.goto_next, { buffer = bufnr, silent = true })
+  keymap.set("n", "<leader>dk", vim.diagnostic.goto_prev, { buffer = bufnr, silent = true })
+  keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { buffer = bufnr, silent = true })
 end
 
 lspconfig.rust_analyzer.setup {
@@ -23,11 +24,13 @@ lspconfig.rust_analyzer.setup {
 
 lspconfig.tsserver.setup {
   capabilities = capabilities,
+  on_attach = on_attach,
 }
 
 lspconfig.sorbet.setup {
   cmd = {"bundle", "exec", "srb", "tc", "--lsp"},
   capabilities = capabilities,
+  on_attach = on_attach,
 }
 
 local system_name
@@ -48,6 +51,7 @@ local sumneko_binary = sumneko_root_path.."/bin/"..system_name.."/lua-language-s
 lspconfig.sumneko_lua.setup {
   cmd = {sumneko_binary, "-E", sumneko_root_path .. "/main.lua"};
   capabilities = capabilities,
+  on_attach = on_attach,
   settings = {
     Lua = {
       runtime = {
