@@ -2,9 +2,11 @@
 # Thanks to ThePrimeagen, source:
 # https://github.com/awesome-streamers/awesome-streamerrc/blob/33ff4dfbb624d01dae36891b9a57334dbf0426b2/ThePrimeagen/tmux
 
-STOREFRONT="~/src/github.com/Shopify/storefront-renderer"
-SHOPIFY="~/src/github.com/Shopify/shopify"
-NGINX="~/src/github.com/Shopify/nginx-routing-modules"
+SHOPIFY_ROOT="~/src/github.com/Shopify"
+STOREFRONT="$SHOPIFY_ROOT/storefront-renderer"
+SHOPIFY="$SHOPIFY_ROOT/shopify"
+NGINX="$SHOPIFY_ROOT/nginx-routing-modules"
+LIQUID_WASM="$SHOPIFY_ROOT/liquid-wasm"
 
 createWindow() {
     session=$1
@@ -83,6 +85,12 @@ while [ "$#" -gt 0 ]; do
     "--nginx")
         isWork || continue
         createSession nginx primary -c $NGINX
+        ;;
+    "--liquid")
+        isWork || continue
+        createSession liquid primary -c $LIQUID_WASM
+        createWindow liquid spec -c "$SHOPIFY_ROOT/liquid-spec"
+        createWindow liquid spec-generator -c "$SHOPIFY_ROOT/liquid-spec-generator"
         ;;
     "--dot")
         createSession main-alacritty primary
