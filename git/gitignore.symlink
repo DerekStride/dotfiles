@@ -6,4 +6,5 @@
 node_modules
 .ruby-version
 .rspec_status
-
+tmp/
+.git/

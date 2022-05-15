@@ -3,7 +3,7 @@
         protocol = https
 [user]
         name = derekstride
-        email = djgstride@gmail.com
+        email = derek@stride.host
 [color]
         diff = auto
         status = auto
