@@ -19,3 +19,4 @@ set -ex
 
 git -C $ZK_INSTALL_PATH pull --rebase origin master
 
+echo "Add export PATH=\"$ZK_INSTALL_PATH/bin:\$PATH\" to ~/.zshrc.local"

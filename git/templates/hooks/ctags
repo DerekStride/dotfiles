@@ -1,6 +1,5 @@
 #!/bin/sh
 set -e
-PATH="$HOME/bin:/usr/local/bin:$PATH"
 
 mkdir .git/tags_lock 2>/dev/null || exit 0
 trap 'rmdir .git/tags_lock; if [ -f .git/tags.$$  ]; then rm .git/tags.$$; fi' EXIT

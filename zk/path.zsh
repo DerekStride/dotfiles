@@ -1,4 +1,0 @@
-ZK_INSTALL_DIR=$PROJECTS/github.com/sirupsen
-ZK_INSTALL_PATH=$ZK_INSTALL_DIR/zk
-
-export PATH="$ZK_INSTALL_PATH/bin:$PATH"
