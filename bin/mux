@@ -88,7 +88,8 @@ while [ "$#" -gt 0 ]; do
         ;;
     "--liquid")
         isWork || continue
-        createSession liquid primary -c $LIQUID_WASM
+        createSession liquid wasm -c $LIQUID_WASM
+        createWindow liquid liquid -c "$SHOPIFY_ROOT/liquid"
         createWindow liquid spec -c "$SHOPIFY_ROOT/liquid-spec"
         createWindow liquid spec-generator -c "$SHOPIFY_ROOT/liquid-spec-generator"
         ;;
