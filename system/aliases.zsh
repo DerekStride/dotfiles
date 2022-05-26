@@ -1,11 +1,8 @@
-# grc overides for ls
-#   Made possible through contributions from generous benefactors like
-#   `brew install coreutils`
-if $(gls &>/dev/null)
+if $(exa &>/dev/null)
 then
-  alias ls="gls -F --color"
-  alias ll="gls -AhlF --color"
-  alias l="gls -hlF --color"
+  alias ls="exa -xF --group-directories-first"
+  alias l="exa -lF --group-directories-first --no-time"
+  alias ll="exa -laF --group-directories-first --no-time"
 else
   alias ll="ls -AhlF --color"
   alias l="ls -hlF --color"
