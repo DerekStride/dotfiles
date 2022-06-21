@@ -24,10 +24,11 @@ nnoremap <silent> <leader>x :so %<CR>
 nnoremap <silent> <leader><leader>x :luafile %<CR>
 
 "notes
-nnoremap <silent> <leader>ns :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/notes/scratch.md<CR>
-nnoremap <silent> <leader>nr :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/notes/rare-vim-commands.md<CR>
-nnoremap <silent> <leader>nw :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/notes/vim-tool-sharpening.md<CR>
-nnoremap <silent> <leader>nt :wincmd s<bar> :e ~/Dropbox/Documents/Work/Shopify/notes/todo.md<CR>
+nnoremap <silent> <leader>ns :wincmd s<bar> :e $SCRATCH/scratch.md<CR>
+nnoremap <silent> <leader>nr :wincmd s<bar> :e $SCRATCH/rare-vim-commands.md<CR>
+nnoremap <silent> <leader>nw :wincmd s<bar> :e $SCRATCH/vim-tool-sharpening.md<CR>
+nnoremap <silent> <leader>nt :wincmd s<bar> :e $SCRATCH/todo.md<CR>
+nnoremap <silent> <leader><leader>n :wincmd s<bar> :e $SCRATCH<CR>
 
 " quickfix
 nnoremap <silent> <C-j> :cnext<CR>zz
