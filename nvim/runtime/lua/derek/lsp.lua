@@ -27,11 +27,11 @@ lspconfig.tsserver.setup {
   on_attach = on_attach,
 }
 
-lspconfig.sorbet.setup {
-  cmd = {"bundle", "exec", "srb", "tc", "--lsp"},
-  capabilities = capabilities,
-  on_attach = on_attach,
-}
+-- lspconfig.sorbet.setup {
+--   cmd = {"bundle", "exec", "srb", "tc", "--lsp"},
+--   capabilities = capabilities,
+--   -- on_attach = on_attach,
+-- }
 
 local system_name
 if vim.fn.has("mac") == 1 then
