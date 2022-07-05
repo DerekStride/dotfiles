@@ -1,20 +1,28 @@
-local has_treesitter, config = pcall(require, 'nvim-treesitter.configs')
+local config = require('nvim-treesitter.configs')
+local parser_config = require('nvim-treesitter.parsers').get_parser_configs()
 
-if not has_treesitter then return end
-
-local read_query = function(filename)
-  return table.concat(vim.fn.readfile(vim.fn.expand(filename)), "\n")
-end
+parser_config.sql = {
+  install_info = {
+    url = "https://github.com/derekstride/tree-sitter-sql",
+    files = { "src/parser.c" },
+    branch = "main",
+    generate_requires_npm = false,
+    requires_generate_from_grammar = false,
+  },
+}
 
 config.setup {
-  ensure_installed = { 'ruby', 'rust', 'bash', 'lua', 'html', 'query' }, -- one of "all", "maintained" (parsers with maintainers), or a list of languages
+  ensure_installed = {
+    'ruby',
+    'rust',
+    'bash',
+    'lua',
+    'html',
+    'sql',
+    'query'
+  },
   highlight = {
     enable = true,
-  },
-  parsers = {
-    lua = {
-      injections = read_query("$ZSH/nvim/tree-sitter/queries/lua/injections.scm"),
-    }
   },
   playground = {
     enable = true,
