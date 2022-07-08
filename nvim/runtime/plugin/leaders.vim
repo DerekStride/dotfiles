@@ -33,7 +33,7 @@ nnoremap <silent> <leader><leader>n :wincmd s<bar> :e $SCRATCH<CR>
 " quickfix
 nnoremap <silent> <C-j> :cnext<CR>zz
 nnoremap <silent> <C-k> :cprev<CR>zz
-" nnoremap <silent> <C-q> :call ToggleQFList(1)<CR>
+nnoremap <silent> <leader>q :call ToggleQFList(1)<CR>
 
 let g:the_primeagen_qf_l = 0
 let g:the_primeagen_qf_g = 0
