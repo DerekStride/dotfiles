@@ -2,26 +2,6 @@
 
 module Utils
   module Timestamp
-    def self.optparse(o)
-      o.accept(Utils::Timestamp) do |timestamp_string|
-        Utils::Timestamp::OPTIONS.fetch(timestamp_string) do
-          timestamp_string = timestamp_string + "s" unless timestamp_string.end_with?("s")
-          timestamp_string = timestamp_string + "econd"
-          Utils::Timestamp::OPTIONS.fetch(timestamp_string) do
-            puts(o); exit(1)
-          end
-        end
-      end
-
-      o.on( "--timestamp TIMESTAMP", Timestamp, Utils::Optparse.list_help_text(
-        "use TIMESTAMP instead of `#{OPTIONS.keys.first}` for timestamp resolution.",
-        OPTIONS.keys,
-      )) do |timestamp_module|
-        Object.include(timestamp_module)
-        timestamp_module
-      end
-    end
-
     module Millisecond
       def timestamp
         Process.clock_gettime(Process::CLOCK_MONOTONIC, :millisecond)
@@ -46,5 +26,13 @@ module Utils
       "microsecond" => Microsecond,
       "millisecond" => Millisecond,
     }
+    ALIASES = {
+      "micro" => "microsecond",
+      "micros" => "microsecond",
+      "milli" => "millisecond",
+      "millis" => "millisecond",
+    }
   end
 end
+
+include Utils::Timestamp::OPTIONS.values.first

@@ -3,10 +3,9 @@
 require "utils/version"
 
 require "utils/logger"
-require "utils/optparse"
+require "utils/debugger"
 require "utils/timestamp"
-
-include Utils::Timestamp::OPTIONS.values.first
+require "utils/option_parser"
 
 module Utils
   class Error < StandardError; end
