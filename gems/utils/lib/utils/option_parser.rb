@@ -8,15 +8,18 @@ module Utils
       def parse(args = ARGV, into: {})
         custom_parser = new
         ::OptionParser.new do |parser|
+          if block_given?
+            parser.separator ""
+            yield parser
+          end
           custom_parser.define_options(parser)
-          yield parser if block_given?
           parser.parse!(args, into: into)
         end
         into
       end
 
-      def list_help_text(alt, list)
-        "#{alt} Available options are: #{list.join(", ")}."
+      def list_help_text(list)
+        "Available options are: #{list.join(", ")}."
       end
     end
 
@@ -27,35 +30,33 @@ module Utils
     end
 
     def define_options(parser)
+      parser.separator ""
+      parser.separator "Common options:"
       define_help_option(parser)
       define_logger_option(parser)
       define_timestamp_option(parser)
     end
 
     def define_help_option(parser)
-      parser.on("-h", "--help") { puts(parser); exit }
+      parser.on_tail("-h", "--help") { puts(parser); exit }
     end
 
     def define_logger_option(parser)
-      parser.on("-v", "--verbose") do
+      parser.on_tail("-v", "--verbose") do
         Logger.instance.level -= 1 unless Logger.instance.debug?
         Logger.level
       end
     end
 
     def define_timestamp_option(parser)
-      parser.accept(Timestamp) do |timestamp_string|
-        Timestamp::OPTIONS.fetch(timestamp_string) do
-          timestamp_string = timestamp_string + "s" unless timestamp_string.end_with?("s")
-          timestamp_string = timestamp_string + "econd"
-          Timestamp::OPTIONS.fetch(timestamp_string) { puts(parser); exit(1) }
-        end
-      end
-
-      parser.on( "--timestamp TIMESTAMP", Timestamp, self.class.list_help_text(
-        "use TIMESTAMP instead of `#{Timestamp::OPTIONS.keys.first}` for timestamp resolution.",
+      parser.on_tail(
+        "--timestamp TIMESTAMP",
         Timestamp::OPTIONS.keys,
-      )) do |timestamp_module|
+        Timestamp::ALIASES,
+        "use TIMESTAMP instead of `#{Timestamp::OPTIONS.keys.first}` for timestamp resolution.",
+        self.class.list_help_text(Timestamp::OPTIONS.keys),
+      ) do |timestamp_string|
+        timestamp_module = Timestamp::OPTIONS[timestamp_string]
         Object.include(timestamp_module)
         timestamp_module
       end

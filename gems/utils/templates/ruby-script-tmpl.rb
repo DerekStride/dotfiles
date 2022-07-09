@@ -10,8 +10,6 @@ gemfile do
   gem 'oj'
 end
 
-require 'open3'
-
 options = Utils::OptionParser.parse do |o|
   o.banner = "usage: ruby script.rb [options]"
 end
