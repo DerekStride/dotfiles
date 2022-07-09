@@ -7,37 +7,32 @@ gemfile do
 
   gem 'pry-byebug'
   gem 'oj'
-  gem 'fiber_scheduler'
   gem 'terminal-table'
   gem "utils", path: "#{ENV["ZSH"]}/gems/utils"
 end
 
 require 'optparse'
-require 'logger'
 require 'open3'
-require 'json'
 
-$stderr.sync = true
-# DEBUG < INFO < WARN < ERROR < FATAL < UNKNOWN
-$log = Logger.new($stderr, level: Logger::WARN)
-
-$options = {}
+options = {}
 
 OptionParser.new do |o|
   o.banner = "Usage: ruby script.rb [options]"
 
   o.on("-h", "--help") { puts(o); exit(0) }
-  o.on("-v", "--verbose") { $log.level -= 1 unless $log.debug? }
+  Utils::Logger.optparse(o)
   Utils::Timestamp.optparse(o)
-end.parse!(into: $options)
+end.parse!(into: options)
 
-def main
-  binding.pry
-  nil
+log = Utils::Logger.instance
+log.debug("Options parsed: #{options}")
+
+def main(options)
+  puts Oj.dump({ "fizz" => "buzz", "foo" => { "bar" => "baz" } })
 end
 
 start = timestamp
-main
+main(options.except(:verbose, :timestamp))
 finished = timestamp
 
-$log.info("Finished in: #{finished - start}#{timestamp_units}")
+log.info("Finished in: #{finished - start}#{timestamp_units}")

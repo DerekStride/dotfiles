@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require "utils/version"
+
+require "utils/logger"
 require "utils/optparse"
 require "utils/timestamp"
 
