@@ -43,7 +43,7 @@ module Utils
 
     def define_logger_option(parser)
       parser.on_tail("-v", "--verbose") do
-        Logger.instance.level -= 1 unless Logger.instance.debug?
+        logger.level -= 1 unless logger.debug?
         Logger.level
       end
     end

@@ -14,7 +14,6 @@ options = Utils::OptionParser.parse do |o|
   o.banner = "usage: ruby script.rb [options]"
 end
 
-log = Utils::Logger.instance
 log.debug("Options parsed: #{options}")
 
 def main(options)

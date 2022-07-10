@@ -11,8 +11,16 @@ module Utils
       @logger ||= ::Logger.new($stderr, level: ::Logger::WARN)
     end
 
+    def logger
+      Utils::Logger.instance
+    end
+
+    def log
+      logger
+    end
+
     def self.level
-      case instance.level
+      case logger.level
       when 0; "DEBUG"
       when 1; "INFO"
       when 2; "WARN"
@@ -23,3 +31,5 @@ module Utils
     end
   end
 end
+
+include Utils::Logger
