@@ -6,8 +6,8 @@ gemfile do
   source 'https://rubygems.org'
 
   gem "utils", path: "#{ENV["ZSH"]}/gems/utils"
-  gem 'pry-byebug'
-  gem 'oj'
+  gem "pry-byebug"
+  gem "oj"
 end
 
 options = Utils::OptionParser.parse do |o|

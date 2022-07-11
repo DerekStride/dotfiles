@@ -6,7 +6,8 @@ require "utils/canonical_logging/log_device"
 
 module Utils
   module CanonicalLogging
-    # ruby script.rb 2> >(jq)
+    # ruby script.rb 2> >(jq-safe)
+    # ruby script.rb 2> >(jq -rR '. as $line | try fromjson catch $line')
     def self.instance
       return @logger if defined?(@logger)
       # logger interface for slurping in hash entries
