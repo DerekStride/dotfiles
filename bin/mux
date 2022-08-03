@@ -7,6 +7,7 @@ STOREFRONT="$SHOPIFY_ROOT/storefront-renderer"
 SHOPIFY="$SHOPIFY_ROOT/shopify"
 NGINX="$SHOPIFY_ROOT/nginx-routing-modules"
 LIQUID_WASM="$SHOPIFY_ROOT/liquid-wasm"
+BACKFILTER="$SHOPIFY_ROOT/backfilter"
 
 createWindow() {
     session=$1
@@ -92,6 +93,10 @@ while [ "$#" -gt 0 ]; do
         createWindow liquid liquid -c "$SHOPIFY_ROOT/liquid"
         createWindow liquid spec -c "$SHOPIFY_ROOT/liquid-spec"
         createWindow liquid spec-generator -c "$SHOPIFY_ROOT/liquid-spec-generator"
+        ;;
+    "--backfilter")
+        isWork || continue
+        createSession db-agility backfilter -c $BACKFILTER
         ;;
     "--dot")
         createSession main-alacritty primary
