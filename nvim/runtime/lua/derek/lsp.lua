@@ -1,8 +1,6 @@
-local has_lspconfig, lspconfig = pcall(require, 'lspconfig')
+local lspconfig = require('lspconfig')
 local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
 local keymap = vim.keymap
-
-if not has_lspconfig then return end
 
 local on_attach = function(client, bufnr)
   keymap.set("n", "K", vim.lsp.buf.hover, { buffer = bufnr, silent = true })
@@ -23,6 +21,11 @@ lspconfig.rust_analyzer.setup {
 }
 
 lspconfig.tsserver.setup {
+  capabilities = capabilities,
+  on_attach = on_attach,
+}
+
+lspconfig.gopls.setup {
   capabilities = capabilities,
   on_attach = on_attach,
 }
