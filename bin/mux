@@ -9,6 +9,8 @@ NGINX="$SHOPIFY_ROOT/nginx-routing-modules"
 LIQUID_WASM="$SHOPIFY_ROOT/liquid-wasm"
 BACKFILTER="$SHOPIFY_ROOT/backfilter"
 
+DEREK_ROOT="~/src/github.com/derekstride"
+
 createWindow() {
     session=$1
     window=$2
@@ -106,6 +108,11 @@ while [ "$#" -gt 0 ]; do
         ;;
     "--site")
         createWindow main-alacritty site -c $PROJECTS/github.com/derekstride/derekstride.github.io
+        ;;
+    "--stride")
+        createSession stride-host primary -c $DEREK_ROOT/stride-host
+        createWindow stride-host mc -c $DEREK_ROOT/stride-host/images/minecraft
+        createWindow stride-host fn -c $DEREK_ROOT/stride-host/functions
         ;;
     *) echo "Unavailable command... $curr"
     esac
