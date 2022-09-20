@@ -10,6 +10,7 @@ vim.g.mapleader = ' '
 
 --Append custom runtime path from my dotfiles
 cmd('set runtimepath^=$ZSH/nvim/runtime')
+cmd('set runtimepath+=$ZSH/nvim/runtime/after')
 
 require('derek')
 

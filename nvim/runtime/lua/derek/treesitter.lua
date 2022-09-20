@@ -8,6 +8,7 @@ config.setup {
     'lua',
     'html',
     'sql',
+    'comment',
     'query'
   },
   highlight = {
