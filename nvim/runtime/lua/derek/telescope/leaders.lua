@@ -11,4 +11,5 @@ keymap.set("n", "<leader>fb", functions.buffers, { noremap = true, silent = true
 keymap.set("n", "<leader>fB", functions.builtin, { noremap = true, silent = true })
 
 keymap.set("n", "<leader>fj", functions.storefront_renderer, { noremap = true, silent = true })
+keymap.set("n", "<leader>fp", functions.github_projects, { noremap = true, silent = true })
 keymap.set("n", "<leader>fd", functions.dotfiles, { noremap = true, silent = true })

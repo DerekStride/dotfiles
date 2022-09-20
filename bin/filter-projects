@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+exa --recurse --level=2 -1 |
+  filter-project-directories.awk |
+  uniq
