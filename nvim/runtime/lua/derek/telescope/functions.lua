@@ -49,20 +49,6 @@ function M.github_projects()
       "filter-projects",
     },
 
-    entry_maker = function(entry)
-      local directory = os.getenv("PROJECTS") .. "/github.com/" .. entry
-      local value = directory .. "/README.md"
-      if vim.fn.filereadable(value) == 0 then
-        value = directory
-      end
-
-      return {
-        value = value,
-        display = entry,
-        ordinal = value,
-      }
-    end,
-
     layout_config = {
       preview_width = 0.6,
     },
