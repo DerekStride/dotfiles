@@ -96,6 +96,12 @@ while [ "$#" -gt 0 ]; do
         createWindow liquid spec -c "$SHOPIFY_ROOT/liquid-spec"
         createWindow liquid spec-generator -c "$SHOPIFY_ROOT/liquid-spec-generator"
         ;;
+    "--shaping")
+        isWork || continue
+        createSession db-shaping maxwell -c "$SHOPIFY_ROOT/sfr-maxwell-producer"
+        createWindow db-shaping sfr -c $STOREFRONT
+        createWindow db-shaping backfilter -c $BACKFILTER
+        ;;
     "--backfilter")
         isWork || continue
         createSession db-agility backfilter -c $BACKFILTER

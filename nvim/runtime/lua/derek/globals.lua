@@ -11,3 +11,16 @@ if pcall(require, 'plenary') then
     return require(name)
   end
 end
+
+vim.g.clipboard = {
+  name = 'pbpaste',
+  copy = {
+    ['+'] = 'pbcopy',
+    ['*'] = 'pbcopy',
+  },
+  paste = {
+    ['+'] = 'pbpaste',
+    ['*'] = 'pbpaste',
+  },
+  cache_enabled = 1,
+}
