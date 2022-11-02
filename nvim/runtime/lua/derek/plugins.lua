@@ -33,6 +33,9 @@ return require('packer').startup(function()
   use { 'L3MON4D3/LuaSnip' }
   use { 'nvim-lua/lsp_extensions.nvim' }
 
+  -- Co-pilot
+  use { 'github/copilot.vim' }
+
   --Add tree-sitter for better highlighting
   use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
   -- use { '$PROJECTS/github.com/nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
