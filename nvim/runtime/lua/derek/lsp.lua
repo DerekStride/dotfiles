@@ -31,6 +31,12 @@ lspconfig.gopls.setup {
   on_attach = on_attach,
 }
 
+lspconfig.java_language_server.setup {
+  cmd = { vim.env.PROJECTS .. "/github.com/georgewfraser/java-language-server/dist/lang_server_mac.sh" },
+  capabilities = capabilities,
+  on_attach = on_attach,
+}
+
 -- lspconfig.sorbet.setup {
 --   cmd = {"bundle", "exec", "srb", "tc", "--lsp"},
 --   capabilities = capabilities,
