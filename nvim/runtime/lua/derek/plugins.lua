@@ -34,7 +34,16 @@ return require('packer').startup(function()
   use { 'nvim-lua/lsp_extensions.nvim' }
 
   -- Co-pilot
-  use { 'github/copilot.vim' }
+  use {
+    'github/copilot.vim',
+    branch = "release",
+    config = function()
+      local sysname = vim.loop.os_uname().sysname
+      if sysname == "Darwin" then
+        vim.g.copilot_node_command = vim.fs.find("node", { path = "/opt/homebrew/Cellar/node@16" })[1]
+      end
+    end
+  }
 
   --Add tree-sitter for better highlighting
   use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
