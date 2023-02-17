@@ -46,8 +46,11 @@ return require('packer').startup(function()
   }
 
   --Add tree-sitter for better highlighting
-  use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
-  -- use { '$PROJECTS/github.com/nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
+  if vim.env.NVIM_TREESITTER_LOCAL == "1" then
+    use { '$PROJECTS/github.com/nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
+  else
+    use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
+  end
   use { 'nvim-treesitter/completion-treesitter' }
   -- Useful for :TSHighlightCapturesUnderCursor and :TSPlaygroundToggle to see
   -- how tree-sitter is parsing the file.
