@@ -3,6 +3,7 @@ local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protoc
 
 require("mason").setup()
 require("mason-lspconfig").setup()
+require("neodev").setup()
 
 local keymap = vim.keymap
 
@@ -45,3 +46,17 @@ lspconfig.java_language_server.setup {
 --   capabilities = capabilities,
 --   -- on_attach = on_attach,
 -- }
+
+lspconfig.lua_ls.setup {
+  capabilities = capabilities,
+  on_attach = on_attach,
+  settings = {
+    Lua = {
+      runtime = {
+        version = 'LuaJIT',
+        -- Setup your lua path
+        path = vim.split(package.path, ';'),
+      },
+    },
+  },
+}
