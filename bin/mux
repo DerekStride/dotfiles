@@ -136,6 +136,9 @@ while [ "$#" -gt 0 ]; do
         createWindow stride-host mc -c $DEREK_ROOT/stride-host/images/minecraft
         createWindow stride-host fn -c $DEREK_ROOT/stride-host/functions
         ;;
+    "--markup")
+        createSession markup primary -c $DEREK_ROOT/markup
+        ;;
     *) echo "Unavailable command... $curr"
     esac
 done

@@ -30,6 +30,9 @@ return require('packer').startup(function()
   use { 'hrsh7th/cmp-path' }
   use { 'onsails/lspkind-nvim' }
   use { 'neovim/nvim-lspconfig' }
+  use { 'williamboman/mason.nvim' }
+  use { 'williamboman/mason-lspconfig.nvim' }
+  use { 'folke/neodev.nvim' }
   use { 'L3MON4D3/LuaSnip' }
   use { 'nvim-lua/lsp_extensions.nvim' }
 
