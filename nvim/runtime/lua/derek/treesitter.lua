@@ -9,6 +9,8 @@ config.setup {
     'html',
     'sql',
     'comment',
+    'markdown',
+    'markdown_inline',
     'query'
   },
   highlight = {
