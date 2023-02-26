@@ -32,6 +32,7 @@ return require('packer').startup(function()
   use { 'neovim/nvim-lspconfig' }
   use { 'williamboman/mason.nvim' }
   use { 'williamboman/mason-lspconfig.nvim' }
+  use { 'mhartington/formatter.nvim' }
   use { 'folke/neodev.nvim' }
   use { 'L3MON4D3/LuaSnip' }
   use { 'nvim-lua/lsp_extensions.nvim' }
