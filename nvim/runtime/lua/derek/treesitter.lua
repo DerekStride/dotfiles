@@ -11,6 +11,7 @@ config.setup {
     'comment',
     'markdown',
     'markdown_inline',
+    'embedded_template',
     'query'
   },
   highlight = {
