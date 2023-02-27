@@ -13,6 +13,7 @@ local on_attach = function(client, bufnr)
   keymap.set("n", "gT", vim.lsp.buf.type_definition, { buffer = bufnr, silent = true })
   keymap.set("n", "gi", "<cmd>Telescope lsp_implementations<cr>", { buffer = bufnr, silent = true })
   keymap.set("n", "gr", "<cmd>Telescope lsp_references<cr>", { buffer = bufnr, silent = true })
+  keymap.set("n", "<leader>ds", "<cmd>Telescope lsp_document_symbols<cr>", { buffer = bufnr, silent = true })
   keymap.set("n", "<leader>rn", vim.lsp.buf.rename, { buffer = bufnr, silent = true })
   keymap.set("n", "<leader>dl", "<cmd>Telescope diagnostics<cr>", { buffer = bufnr, silent = true })
   keymap.set("n", "<leader>dj", vim.diagnostic.goto_next, { buffer = bufnr, silent = true })
@@ -42,12 +43,24 @@ lspconfig.java_language_server.setup {
 
 lspconfig.ruby_ls.setup {
   capabilities = capabilities,
-  on_attach = on_attach,
+  on_attach = function(client, bufnr)
+    keymap.set("n", "<leader>ds", "<cmd>Telescope lsp_document_symbols<cr>", { buffer = bufnr, silent = true })
+    keymap.set("n", "<leader>dl", "<cmd>Telescope diagnostics<cr>", { buffer = bufnr, silent = true })
+    keymap.set("n", "<leader>dj", vim.diagnostic.goto_next, { buffer = bufnr, silent = true })
+    keymap.set("n", "<leader>dk", vim.diagnostic.goto_prev, { buffer = bufnr, silent = true })
+    keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { buffer = bufnr, silent = true })
+  end,
 }
 
 lspconfig.sorbet.setup {
   capabilities = capabilities,
-  on_attach = on_attach,
+  on_attach = function(client, bufnr)
+    keymap.set("n", "<leader>ds", "<cmd>Telescope lsp_document_symbols<cr>", { buffer = bufnr, silent = true })
+    keymap.set("n", "<leader>dl", "<cmd>Telescope diagnostics<cr>", { buffer = bufnr, silent = true })
+    keymap.set("n", "<leader>dj", vim.diagnostic.goto_next, { buffer = bufnr, silent = true })
+    keymap.set("n", "<leader>dk", vim.diagnostic.goto_prev, { buffer = bufnr, silent = true })
+    keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { buffer = bufnr, silent = true })
+  end,
 }
 
 lspconfig.tailwindcss.setup {
@@ -62,8 +75,10 @@ lspconfig.lua_ls.setup {
     Lua = {
       runtime = {
         version = 'LuaJIT',
-        -- Setup your lua path
         path = vim.split(package.path, ';'),
+      },
+      diagnostics = {
+        globals = {'describe', 'it', 'use'},
       },
     },
   },

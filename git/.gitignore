@@ -8,3 +8,4 @@ node_modules
 .rspec_status
 tmp/
 .git/
+*.luarc.json
