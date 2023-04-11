@@ -1,0 +1,3 @@
+git-merge-base-main() {
+  git merge-base HEAD $(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
+}
