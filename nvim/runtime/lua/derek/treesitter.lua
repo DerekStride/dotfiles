@@ -2,17 +2,18 @@ local config = require('nvim-treesitter.configs')
 
 config.setup {
   ensure_installed = {
-    'ruby',
-    'rust',
     'bash',
-    'lua',
-    'html',
-    'sql',
     'comment',
+    'embedded_template',
+    'graphql',
+    'html',
+    'lua',
     'markdown',
     'markdown_inline',
-    'embedded_template',
-    'query'
+    'query',
+    'ruby',
+    'rust',
+    'sql',
   },
   highlight = {
     enable = true,

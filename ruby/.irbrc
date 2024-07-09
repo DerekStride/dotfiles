@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 require 'irb/completion'
-require 'irb/ext/save-history'
+require 'irb/ext/eval_history'
 require 'rubygems'
 
 IRB.conf[:SAVE_HISTORY] = 1000
@@ -37,12 +37,4 @@ def cop
   last_value = IRB.CurrentContext.last_value
   %x[echo '#{last_value}' | pbcopy]
   "copied \`#{last_value}' to your clipboard"
-end
-
-def me
-  User.find_by_login(ENV['USER'].strip)
-end
-
-def r
-  reload!
 end

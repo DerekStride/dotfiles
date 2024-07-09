@@ -1,27 +1,23 @@
 #!/usr/bin/env ruby
 
-require 'bundler/inline'
+require "bundler/inline"
+require "optparse"
+require "json"
 
 gemfile do
   source 'https://rubygems.org'
 
-  gem "utils", path: "#{ENV["ZSH"]}/gems/utils"
-  gem "pry-byebug"
-  gem "oj"
+  gem "debug"
 end
 
-options = Utils::OptionParser.parse do |o|
+options = {}
+
+OptionParser.new do |o|
   o.banner = "usage: ruby script.rb [options]"
-end
-
-log.debug("Options parsed: #{options}")
+end.parse!(ARGV, into: options)
 
 def main(options)
-  puts Oj.dump(options)
+  puts JSON.dump(options)
 end
 
-start = timestamp
 main(options)
-finished = timestamp
-
-log.info("Finished in: #{finished - start}#{timestamp_units}")

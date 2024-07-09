@@ -28,7 +28,5 @@
         default = simple
 [init]
         defaultBranch = main
-[pull]
-        rebase = true
 [include]
         path = ~/.gitconfig.local

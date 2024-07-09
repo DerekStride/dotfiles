@@ -34,7 +34,6 @@ return require('packer').startup(function()
   use { 'williamboman/mason-lspconfig.nvim' }
   use { 'folke/neodev.nvim' }
   use { 'L3MON4D3/LuaSnip' }
-  use { 'nvim-lua/lsp_extensions.nvim' }
 
   -- Co-pilot
   use {

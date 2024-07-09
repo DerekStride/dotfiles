@@ -62,12 +62,12 @@ Usage: mux [options]
   --dot
   --site
   --stride
+  --ts (tree-sitter)
 
   # Work specific
   --sfr
   --shopify
   --nginx
-  --liquid
   --shaping
   --backfilter
 HELP
@@ -109,35 +109,19 @@ while [ "$#" -gt 0 ]; do
     "--sfr")
         isWork || continue
         createSession sfr primary -c $STOREFRONT
-        ;;
-    "--shopify")
-        isWork || continue
-        createSession shopify primary -c $SHOPIFY
-        ;;
-    "--nginx")
-        isWork || continue
-        createSession nginx primary -c $NGINX
-        ;;
-    "--shaping")
-        isWork || continue
-        createSession db-shaping maxwell -c "$SHOPIFY_ROOT/sfr-maxwell-producer"
-        createWindow db-shaping sfr -c $STOREFRONT
-        createWindow db-shaping backfilter -c $BACKFILTER
+        createSession sfr shopify -c $SHOPIFY
         ;;
     "--dot")
-        createSession main-alacritty primary
-        createWindow main-alacritty dot -c $ZSH
-        [ -n "$NOTES" ] && createWindow main-alacritty notes -c $NOTES
-        [ -n "$ZK_PATH" ] && createWindow main-alacritty zettel -c $ZK_PATH
-        createWindow main-alacritty site -c $PROJECTS/github.com/derekstride/derekstride.github.io
+        createSession main-terminal primary
+        createWindow main-terminal dot -c $ZSH
+        [ -n "$NOTES" ] && createWindow main-terminal notes -c $NOTES
+        [ -n "$ZK_PATH" ] && createWindow main-terminal zettel -c $ZK_PATH
+        createWindow main-terminal site -c $PROJECTS/github.com/derekstride/derekstride.github.io
         ;;
-    "--stride")
-        createSession stride-host primary -c $DEREK_ROOT/stride-host
-        createWindow stride-host mc -c $DEREK_ROOT/stride-host/images/minecraft
-        createWindow stride-host fn -c $DEREK_ROOT/stride-host/functions
-        ;;
-    "--markup")
-        createSession markup primary -c $DEREK_ROOT/markup
+    "--ts")
+        createSession ts ruby -c $DEREK_ROOT/ruby-tree-sitter
+        createWindow ts sql -c $DEREK_ROOT/tree-sitter-sql
+        createWindow ts nvim-ts -c $DEREK_ROOT/nvim-treesitter
         ;;
     *) echo "Unavailable command... $curr"
     esac
