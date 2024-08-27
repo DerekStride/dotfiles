@@ -5,6 +5,7 @@ require "optparse"
 require "logger"
 require "json"
 
+$stdout.sync = $stderr.sync = true
 PROGNAME = File.basename($0)
 
 def logger
