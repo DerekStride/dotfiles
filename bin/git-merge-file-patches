@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+BRANCH=$1
+shift
+
+git log --reverse --format=format:%H --no-merges $BRANCH -- $@ \
+  | xargs -I{} git show {} --format=email -- $@ \
+  | git am
