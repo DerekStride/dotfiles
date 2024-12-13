@@ -21,7 +21,6 @@ OptionParser.new do |o|
   o.banner = "usage: ruby #{progname} [options]"
   o.on("-v", "--verbose", "Enable verbose logging") do |verbose|
     logger.level -= 1 unless logger.debug?
-    logger.level
   end
 end.parse!(ARGV, into: options)
 
