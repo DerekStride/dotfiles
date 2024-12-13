@@ -30,5 +30,7 @@
         defaultBranch = main
 [pull]
         rebase = false
+[rebase]
+        updateRefs = true
 [include]
         path = ~/.gitconfig.local

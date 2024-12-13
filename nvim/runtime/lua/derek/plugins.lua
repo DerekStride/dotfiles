@@ -42,7 +42,7 @@ return require('packer').startup(function()
     config = function()
       local sysname = vim.loop.os_uname().sysname
       if sysname == "Darwin" then
-        vim.g.copilot_node_command = vim.fs.find("node", { path = "/opt/homebrew/Cellar/node@16" })[1]
+        vim.g.copilot_node_command = vim.fs.find("node", { path = "/opt/homebrew/Cellar/node@18" })[1]
       end
     end
   }
