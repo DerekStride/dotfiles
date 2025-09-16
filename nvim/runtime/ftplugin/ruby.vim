@@ -16,5 +16,6 @@ function! RunRubyTests(all_tests)
   call VimuxRunCommand(command . bufname('%'))
 endfunction
 
+setlocal textwidth=120
 nmap <buffer> <leader>rf :call RunRubyTests(0)<CR>
 nmap <buffer> <leader>ra :call RunRubyTests(1)<CR>

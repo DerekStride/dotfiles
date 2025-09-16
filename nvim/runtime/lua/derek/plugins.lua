@@ -35,18 +35,6 @@ return require('packer').startup(function()
   use { 'folke/neodev.nvim' }
   use { 'L3MON4D3/LuaSnip' }
 
-  -- Co-pilot
-  use {
-    'github/copilot.vim',
-    branch = "release",
-    config = function()
-      local sysname = vim.loop.os_uname().sysname
-      if sysname == "Darwin" then
-        vim.g.copilot_node_command = vim.fs.find("node", { path = "/opt/homebrew/Cellar/node@18" })[1]
-      end
-    end
-  }
-
   --Add tree-sitter for better highlighting
   if vim.env.NVIM_TREESITTER_LOCAL == "1" then
     use { '$PROJECTS/github.com/nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }

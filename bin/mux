@@ -2,11 +2,8 @@
 # Thanks to ThePrimeagen, source:
 # https://github.com/awesome-streamers/awesome-streamerrc/blob/33ff4dfbb624d01dae36891b9a57334dbf0426b2/ThePrimeagen/tmux
 
-SHOPIFY_ROOT="~/src/github.com/Shopify"
-STOREFRONT="$SHOPIFY_ROOT/storefront-renderer"
-SHOPIFY="$SHOPIFY_ROOT/shopify"
-NGINX="$SHOPIFY_ROOT/nginx-routing-modules"
-BACKFILTER="$SHOPIFY_ROOT/backfilter"
+SHOPIFY_ROOT="~/world"
+STOREFRONT="$SHOPIFY_ROOT/trees/root/src/areas/core/storefront"
 
 DEREK_ROOT="~/src/github.com/derekstride"
 
@@ -60,16 +57,9 @@ Usage: mux [options]
 
   # Project specific
   --dot
-  --site
-  --stride
-  --ts (tree-sitter)
 
   # Work specific
   --sfr
-  --shopify
-  --nginx
-  --shaping
-  --backfilter
 HELP
 }
 
@@ -109,7 +99,7 @@ while [ "$#" -gt 0 ]; do
     "--sfr")
         isWork || continue
         createSession sfr primary -c $STOREFRONT
-        createSession sfr shopify -c $SHOPIFY
+        createSession sfr root -c $SHOPIFY_ROOT
         ;;
     "--dot")
         createSession main-terminal primary
@@ -117,11 +107,6 @@ while [ "$#" -gt 0 ]; do
         [ -n "$NOTES" ] && createWindow main-terminal notes -c $NOTES
         [ -n "$ZK_PATH" ] && createWindow main-terminal zettel -c $ZK_PATH
         createWindow main-terminal site -c $PROJECTS/github.com/derekstride/derekstride.github.io
-        ;;
-    "--ts")
-        createSession ts ruby -c $DEREK_ROOT/ruby-tree-sitter
-        createWindow ts sql -c $DEREK_ROOT/tree-sitter-sql
-        createWindow ts nvim-ts -c $DEREK_ROOT/nvim-treesitter
         ;;
     *) echo "Unavailable command... $curr"
     esac
