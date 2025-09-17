@@ -2,4 +2,6 @@ git/.gitconfig.local
 Brewfile.lock.json
 tmp/
 .netrwhist
+.claude
+CLAUDE.md
 
