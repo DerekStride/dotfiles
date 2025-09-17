@@ -1,6 +1,35 @@
 local keymap = vim.keymap
 local default_opts = { silent = true, noremap = true }
 
+local function find_claude_pane()
+  local find_claude_cmd = "tmux list-panes -F '#{pane_id} #{pane_current_command}' | grep -E '(claude|node)' | head -1 | cut -d' ' -f1"
+  local claude_pane = vim.fn.system(find_claude_cmd):gsub("%s+", "")
+
+  if claude_pane == "" then
+    print("No Claude Code pane found. Make sure claude code is running in a tmux pane.")
+    return nil
+  end
+
+  return claude_pane
+end
+
+local function send_to_claude_pane(content, description)
+  local claude_pane = find_claude_pane()
+  if not claude_pane then
+    return
+  end
+
+  local escaped_content = vim.fn.shellescape(content)
+  local tmux_cmd = string.format(
+    "tmux send-keys -t %s %s Enter",
+    claude_pane,
+    escaped_content
+  )
+
+  vim.fn.system("bash -c " .. vim.fn.shellescape(tmux_cmd))
+  print(description .. " (pane " .. claude_pane .. ")")
+end
+
 local function send_to_claude()
   local text = ""
 
@@ -34,25 +63,18 @@ local function send_to_claude()
     return
   end
 
-  local escaped_text = vim.fn.shellescape(text)
+  send_to_claude_pane(text, "Sent " .. #text .. " characters to Claude Code")
+end
 
-  -- Find the Claude Code pane
-  local find_claude_cmd = "tmux list-panes -F '#{pane_id} #{pane_current_command}' | grep -E '(claude|node)' | head -1 | cut -d' ' -f1"
-  local claude_pane = vim.fn.system(find_claude_cmd):gsub("%s+", "")
+local function send_filepath_to_claude()
+  local filepath = vim.fn.expand("%:p")
 
-  if claude_pane == "" then
-    print("No Claude Code pane found. Make sure claude code is running in a tmux pane.")
+  if filepath == "" then
+    print("No file currently open")
     return
   end
 
-  local tmux_cmd = string.format(
-    "tmux send-keys -t %s %s Enter",
-    claude_pane,
-    escaped_text
-  )
-
-  vim.fn.system("bash -c " .. vim.fn.shellescape(tmux_cmd))
-  print("Sent " .. #text .. " characters to Claude Code (pane " .. claude_pane .. ")")
+  send_to_claude_pane(filepath, "Sent filepath to Claude Code: " .. filepath)
 end
 
 local function open_scratch_prompt()
@@ -78,4 +100,5 @@ keymap.set("n", "<leader><leader>m", "<cmd>!mux split<cr><cr>", default_opts)
 keymap.set("n", "<leader><leader>s", "<cmd>set nonumber<cr>", default_opts)
 keymap.set("n", "<leader><leader>p", "<cmd>set number<cr>", default_opts)
 keymap.set({"n", "v"}, "<leader><leader>c", send_to_claude, default_opts)
+keymap.set("n", "<leader><leader>f", send_filepath_to_claude, default_opts)
 keymap.set("n", "<leader>np", open_scratch_prompt, default_opts)
