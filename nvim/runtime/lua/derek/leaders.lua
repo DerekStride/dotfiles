@@ -77,20 +77,38 @@ local function send_filepath_to_claude()
   send_to_claude_pane(filepath, "Sent filepath to Claude Code: " .. filepath)
 end
 
-local function open_scratch_prompt()
-  local scratch_dir = vim.fn.expand("$SCRATCH")
-  if scratch_dir == "$SCRATCH" or scratch_dir == "" then
-    print("SCRATCH environment variable not set")
+local function open_prompt_notes()
+  local scratch_dir = vim.fn.expand("$NOTES")
+  if scratch_dir == "$NOTES" or scratch_dir == "" then
+    print("NOTES environment variable not set")
     return
   end
 
   local git_branch = vim.fn.system("git branch --show-current 2>/dev/null"):gsub("%s+", "")
+  local note_name
+
   if git_branch == "" then
-    git_branch = "no-git"
+    note_name = "no-git"
+  elseif git_branch == "main" or git_branch == "master" then
+    -- Get git project name from remote origin URL
+    local git_remote = vim.fn.system("git remote get-url origin 2>/dev/null"):gsub("%s+", "")
+    if git_remote ~= "" then
+      -- Extract project name from git URL (handles both SSH and HTTPS formats)
+      local project_name = git_remote:match("([^/]+)%.git$") or git_remote:match("([^/]+)$")
+      if project_name then
+        note_name = project_name
+      else
+        note_name = git_branch
+      end
+    else
+      note_name = git_branch
+    end
+  else
+    note_name = git_branch
   end
 
   local prompts_dir = scratch_dir .. "/prompts"
-  local prompt_file = prompts_dir .. "/" .. git_branch .. ".md"
+  local prompt_file = prompts_dir .. "/" .. note_name .. ".md"
 
   vim.cmd("wincmd s")
   vim.cmd("edit " .. vim.fn.fnameescape(prompt_file))
@@ -101,4 +119,4 @@ keymap.set("n", "<leader><leader>s", "<cmd>set nonumber<cr>", default_opts)
 keymap.set("n", "<leader><leader>p", "<cmd>set number<cr>", default_opts)
 keymap.set({"n", "v"}, "<leader><leader>c", send_to_claude, default_opts)
 keymap.set("n", "<leader><leader>f", send_filepath_to_claude, default_opts)
-keymap.set("n", "<leader>np", open_scratch_prompt, default_opts)
+keymap.set("n", "<leader>np", open_prompt_notes, default_opts)
