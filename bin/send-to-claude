@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# send-to-claude - Send command output to Claude running in a tmux pane
+# Usage: command | send-to-claude
+#        send-to-claude < file.txt
+# Example: ls -al | send-to-claude
+
+find_claude_pane() {
+    local claude_pane
+    claude_pane=$(tmux list-panes -F '#{pane_id} #{pane_current_command}' | grep -E '(claude|node)' | head -1 | cut -d' ' -f1)
+
+    if [[ -z "$claude_pane" ]]; then
+        echo "Error: No Claude Code pane found. Make sure claude code is running in a tmux pane." >&2
+        return 1
+    fi
+
+    echo "$claude_pane"
+}
+
+main() {
+    local claude_pane
+    claude_pane=$(find_claude_pane) || exit 1
+
+    # Read all input from stdin
+    local content
+    content=$(cat)
+
+    if [[ -z "$content" ]]; then
+        echo "Error: No input received" >&2
+        exit 2
+    fi
+
+    # Send the content to Claude pane using the same approach as neovim
+    tmux send-keys -t "$claude_pane" "$content" Enter
+
+    # Show confirmation
+    local char_count=${#content}
+    echo "Sent $char_count characters to Claude Code (pane $claude_pane)" >&2
+}
+
+main "$@"
