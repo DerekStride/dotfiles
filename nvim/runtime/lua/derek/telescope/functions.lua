@@ -14,6 +14,18 @@ function M.dotfiles()
   }
 end
 
+function M.notes()
+  builtin.find_files {
+    prompt_title = "~ notes ~",
+    shorten_path = false,
+    cwd = "$NOTES",
+
+    layout_config = {
+      preview_width = 0.6,
+    },
+  }
+end
+
 function M.storefront_renderer()
   builtin.find_files {
     prompt_title = "~ Storefront Renderer ~",
