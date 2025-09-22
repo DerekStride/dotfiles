@@ -1,0 +1,158 @@
+#!/usr/bin/env bash
+
+sayHelp() {
+  cat <<- "HELP"
+Usage: wt [command] [options]
+  commands:
+  (no command)     Switch to a worktree using fzf selection (default)
+  new [NAME]       Create a new git worktree (uses tmux window name if NAME not provided)
+  ls               List all git worktrees
+  switch           Switch to a worktree using fzf selection
+  remove | rm      Remove worktrees using fzf multi-selection
+  help | --help | -h
+HELP
+}
+
+getCurrentTmuxWindowName() {
+  if [ -n "$TMUX" ]; then
+    tmux display-message -p '#W'
+  else
+    echo ""
+  fi
+}
+
+getWorktreeList() {
+  git worktree list --porcelain 2>/dev/null | grep "^worktree " | sed 's/^worktree //'
+}
+
+getWorktreeNames() {
+  getWorktreeList | xargs -I {} basename {}
+}
+
+if [ "$1" == "help" ] || [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
+  sayHelp
+  exit 0
+fi
+
+# Default to switch command if no arguments provided
+if [ "$#" -eq 0 ]; then
+  command="switch"
+else
+  command=$1
+  shift
+fi
+
+case "$command" in
+"new")
+  name=${1:-$(getCurrentTmuxWindowName)}
+
+  if [ -z "$name" ]; then
+    echo "Error: No name provided and no tmux window name available"
+    echo "Usage: wt new [NAME]"
+    exit 1
+  fi
+
+  # Check if we're in a git repository
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    echo "Error: Not in a git repository"
+    exit 1
+  fi
+
+  # Create worktree in a trees directory - check current location first
+  git_root=$(git rev-parse --show-toplevel)
+  current_dir=$(pwd)
+
+  # Check if we're already in a trees directory structure
+  if [[ "$current_dir" == */trees/* ]]; then
+    # Extract the trees directory path
+    trees_dir="${current_dir%/trees/*}/trees"
+  else
+    # Default to creating trees directory relative to git root
+    trees_dir="$git_root/../trees"
+  fi
+
+  # Ensure trees directory exists
+  mkdir -p "$trees_dir"
+
+  worktree_dir="$trees_dir/$name"
+
+  echo "Creating worktree '$name' at $worktree_dir"
+  git worktree add "$worktree_dir" -b "$name" 2>/dev/null || git worktree add "$worktree_dir" "$name"
+  ;;
+
+"ls")
+  git worktree list
+  ;;
+
+"switch")
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "Error: fzf is required for switch command"
+    exit 1
+  fi
+
+  # Check if we're in a git repository
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    echo "Error: Not in a git repository"
+    exit 1
+  fi
+
+  # Get current working directory relative to git root
+  current_git_root=$(git rev-parse --show-toplevel)
+  current_dir=$(pwd)
+  relative_path=${current_dir#$current_git_root}
+
+  selected=$(getWorktreeList | fzf --prompt="Select worktree: " --height=40% --reverse)
+
+  if [ -n "$selected" ]; then
+    target_dir="$selected$relative_path"
+
+    # Check if the equivalent directory exists in the target worktree
+    if [ -d "$target_dir" ]; then
+      echo "Switching to: $target_dir"
+      cd "$target_dir" || exit 1
+    else
+      echo "Directory $relative_path doesn't exist in target worktree, switching to worktree root: $selected"
+      cd "$selected" || exit 1
+    fi
+    exec "$SHELL"
+  else
+    echo "No worktree selected"
+    exit 1
+  fi
+  ;;
+
+"remove"|"rm")
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "Error: fzf is required for remove command"
+    exit 1
+  fi
+
+  selected=$(getWorktreeList | fzf --prompt="Select worktrees to remove: " --multi --height=40% --reverse)
+
+  if [ -n "$selected" ]; then
+    echo "Selected worktrees for removal:"
+    echo "$selected"
+    echo
+    read -p "Are you sure you want to remove these worktrees? (y/N): " -n 1 -r
+    echo
+
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      echo "$selected" | while IFS= read -r worktree; do
+        echo "Removing worktree: $worktree"
+        git worktree remove "$worktree" --force
+      done
+    else
+      echo "Removal cancelled"
+    fi
+  else
+    echo "No worktrees selected"
+    exit 1
+  fi
+  ;;
+
+*)
+  echo "Unknown command: $command"
+  sayHelp
+  exit 1
+  ;;
+esac
