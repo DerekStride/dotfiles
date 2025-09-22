@@ -52,7 +52,8 @@ sayHelp() {
 Usage: mux [options]
   options:
   run
-  split
+  new [WINDOW_NAME]    Create a new tmux window (optionally with specified name)
+  split                Split window into 3 panes (left half, right top, right bottom)
   help | --help | -h
 
   # Project specific
@@ -69,6 +70,31 @@ if [ "$1" == "run" ]; then
   exit $?
 fi
 
+if [ "$1" == "new" ]; then
+  shift
+  windowName=${1:-""}
+  if [ -n "$windowName" ]; then
+    tmux new-window -n "$windowName" -d
+  else
+    tmux new-window -d
+  fi
+  exit $?
+fi
+
+if [ "$1" == "split" ]; then
+  # Split window into 3 panes: left half, right top, right bottom
+  # First split horizontally (left and right halves)
+  tmux split-window -h -t 0 -l "50%" -d
+  # Then split the right pane vertically (top and bottom)
+  tmux split-window -v -t 1 -l "50%" -d
+  exit $?
+fi
+
+if [ "$1" == "help" ]; then
+  sayHelp
+  exit $?
+fi
+
 if [ "$#" -eq 0 ]; then
   sayHelp
   exit 1
@@ -79,27 +105,12 @@ while [ "$#" -gt 0 ]; do
     shift
 
     case "$curr" in
-    "split")
-        tmuxVerMajor=$(tmux -V | sed "s/tmux \(.\).*/\1/g")
-        tmuxVerMinor=$(tmux -V | sed "s/tmux .\.\(.\).*/\1/g")
-        if [ $tmuxVerMajor -lt 3 -o $tmuxVerMinor -lt 1 ]; then
-          # Prior to tmux version 3.1 the -p flag was used for denoting the size as a percentage.
-          # split-window [-l size | -p percentage]
-          tmux split-window -h -t 0 -p 33 -d
-        else
-          # tmux version 3.1 merged the -p flag into the -l flag
-          # split-window [-l size]
-          #   size may be followed by `%' to specify a percentage of the available space.
-          tmux split-window -h -t 0 -l "33%" -d
-        fi
-        ;;
-    "help" | "--help" | "-h")
+    "--help" | "-h")
         sayHelp
         ;;
     "--sfr")
         isWork || continue
         createSession sfr primary -c $STOREFRONT
-        createSession sfr root -c $SHOPIFY_ROOT
         ;;
     "--dot")
         createSession main-terminal primary
