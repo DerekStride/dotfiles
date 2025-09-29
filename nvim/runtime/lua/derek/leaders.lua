@@ -107,7 +107,7 @@ local function open_prompt_notes()
     note_name = git_branch
   end
 
-  local prompts_dir = scratch_dir .. "/prompts"
+  local prompts_dir = scratch_dir .. "/claude/prompts"
   local prompt_file = prompts_dir .. "/" .. note_name .. ".md"
 
   vim.cmd("wincmd s")
