@@ -51,4 +51,5 @@ return require('packer').startup(function()
   use { 'nvim-lua/plenary.nvim' }
   use { 'nvim-telescope/telescope.nvim' }
   use { 'nvim-telescope/telescope-fzy-native.nvim' }
+  use { 'lewis6991/gitsigns.nvim' }
 end)
