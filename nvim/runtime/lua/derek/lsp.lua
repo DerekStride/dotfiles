@@ -1,4 +1,3 @@
-local lspconfig = require('lspconfig')
 local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
 
 require("mason").setup()
@@ -19,7 +18,7 @@ local on_attach = function(client, bufnr)
   keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { buffer = bufnr, silent = true })
 end
 
-lspconfig.rust_analyzer.setup {
+vim.lsp.config('rust_analyzer',  {
   capabilities = capabilities,
   on_attach = on_attach,
   settings = {
@@ -29,34 +28,29 @@ lspconfig.rust_analyzer.setup {
       }
     }
   },
-}
+})
 
-lspconfig.gopls.setup {
+vim.lsp.config('gopls',  {
   capabilities = capabilities,
   on_attach = on_attach,
-}
+})
 
--- lspconfig.java_language_server.setup {
---   capabilities = capabilities,
---   on_attach = on_attach,
--- }
-
-lspconfig.ruby_lsp.setup {
+vim.lsp.config('ruby_lsp',  {
   capabilities = capabilities,
   on_attach = on_attach,
-}
+})
 
-lspconfig.sorbet.setup {
+vim.lsp.config('sorbet',  {
   capabilities = capabilities,
   on_attach = on_attach,
-}
+})
 
-lspconfig.tailwindcss.setup {
+vim.lsp.config('tailwindcss',  {
   capabilities = capabilities,
   on_attach = on_attach,
-}
+})
 
-lspconfig.lua_ls.setup {
+vim.lsp.config('lua_ls',  {
   capabilities = capabilities,
   on_attach = on_attach,
   settings = {
@@ -70,4 +64,4 @@ lspconfig.lua_ls.setup {
       },
     },
   },
-}
+})
