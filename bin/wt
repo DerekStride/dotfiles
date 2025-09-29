@@ -46,38 +46,8 @@ case "$command" in
 "new")
   name=${1:-$(getCurrentTmuxWindowName)}
 
-  if [ -z "$name" ]; then
-    echo "Error: No name provided and no tmux window name available"
-    echo "Usage: wt new [NAME]"
-    exit 1
-  fi
-
-  # Check if we're in a git repository
-  if ! git rev-parse --git-dir >/dev/null 2>&1; then
-    echo "Error: Not in a git repository"
-    exit 1
-  fi
-
-  # Create worktree in a trees directory - check current location first
-  git_root=$(git rev-parse --show-toplevel)
-  current_dir=$(pwd)
-
-  # Check if we're already in a trees directory structure
-  if [[ "$current_dir" == */trees/* ]]; then
-    # Extract the trees directory path
-    trees_dir="${current_dir%/trees/*}/trees"
-  else
-    # Default to creating trees directory relative to git root
-    trees_dir="$git_root/../trees"
-  fi
-
-  # Ensure trees directory exists
-  mkdir -p "$trees_dir"
-
-  worktree_dir="$trees_dir/$name"
-
-  echo "Creating worktree '$name' at $worktree_dir"
-  git worktree add "$worktree_dir" -b "$name" 2>/dev/null || git worktree add "$worktree_dir" "$name"
+  echo "copied to clipboard: dev cd $(basename $PWD) -t $name"
+  echo "dev cd $(basename $PWD) -t $name" | pbcopy
   ;;
 
 "ls")
