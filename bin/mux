@@ -73,12 +73,50 @@ fi
 if [ "$1" == "new" ]; then
   shift
   windowName=${1:-""}
+
   if [ -n "$windowName" ]; then
     tmux new-window -n "$windowName" -d
-  else
-    tmux new-window -d
+    exit $?
   fi
-  exit $?
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "Error: fzf is required for branch selection" >&2
+    exit 1
+  fi
+
+  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "Error: Not inside a git repository" >&2
+    exit 1
+  fi
+
+  branches=$(git branch --sort=-committerdate --format='%(refname:short)' 2>/dev/null | sed 's/^\* //')
+
+  if [ -z "$branches" ]; then
+    echo "No branches available" >&2
+    exit 1
+  fi
+
+  selection=$(echo "$branches" | fzf --multi --prompt="tmux window branches > " --height=40% --reverse --header="Select branches for new tmux windows")
+
+  if [ -z "$selection" ]; then
+    echo "No branches selected" >&2
+    exit 1
+  fi
+
+  existing_windows=$(tmux list-windows -F '#W' 2>/dev/null)
+
+  while IFS= read -r branch; do
+    [ -z "$branch" ] && continue
+
+    if printf '%s\n' "$existing_windows" | grep -Fx -- "$branch" >/dev/null 2>&1; then
+      echo "Window '$branch' already exists, skipping" >&2
+      continue
+    fi
+
+    tmux new-window -n "$branch" -d
+  done <<< "$selection"
+
+  exit 0
 fi
 
 if [ "$1" == "split" ]; then
