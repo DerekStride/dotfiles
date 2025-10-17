@@ -35,6 +35,12 @@ vim.lsp.config('gopls',  {
   on_attach = on_attach,
 })
 
+vim.lsp.config('rubocop',  {
+  cmd = {"bundle", "exec", "rubocop", "--lsp"},
+  capabilities = capabilities,
+  on_attach = on_attach,
+})
+
 vim.lsp.config('ruby_lsp',  {
   capabilities = capabilities,
   on_attach = on_attach,

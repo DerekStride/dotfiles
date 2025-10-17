@@ -77,6 +77,21 @@ local function send_filepath_to_claude()
   send_to_claude_pane(filepath, "Sent filepath to Claude Code: " .. filepath)
 end
 
+local function copy_filepath_to_clipboard()
+  local filepath = vim.fn.expand("%:p")
+
+  if filepath == "" then
+    print("No file currently open")
+    return
+  end
+
+  local relative_filepath = vim.fn.fnamemodify(filepath, ':.')
+
+  vim.fn.setreg('+', relative_filepath)
+  vim.fn.setreg('*', relative_filepath)
+  print("Copied filepath to clipboard: " .. relative_filepath)
+end
+
 local function open_prompt_notes()
   local scratch_dir = vim.fn.expand("$NOTES")
   if scratch_dir == "$NOTES" or scratch_dir == "" then
@@ -119,4 +134,5 @@ keymap.set("n", "<leader><leader>s", "<cmd>set nonumber<cr>", default_opts)
 keymap.set("n", "<leader><leader>p", "<cmd>set number<cr>", default_opts)
 keymap.set({"n", "v"}, "<leader><leader>c", send_to_claude, default_opts)
 keymap.set("n", "<leader><leader>f", send_filepath_to_claude, default_opts)
+keymap.set("n", "<leader><leader>y", copy_filepath_to_clipboard, default_opts)
 keymap.set("n", "<leader>np", open_prompt_notes, default_opts)
