@@ -80,13 +80,25 @@ local function send_filepath_to_claude()
 
   -- Try relative to current workspace first
   if filepath:sub(1, #cwd) == cwd then
-    relative_path = filepath:sub(#cwd + 2) -- +2 to skip the trailing slash
+    relative_path = "@" .. filepath:sub(#cwd + 2) -- +2 to skip the trailing slash
   -- Try relative to home directory
   elseif filepath:sub(1, #home) == home then
-    relative_path = "~" .. filepath:sub(#home + 1)
+    relative_path = "@~" .. filepath:sub(#home + 1)
   -- Use absolute path for everything else
   else
-    relative_path = filepath
+    relative_path = "@" .. filepath
+  end
+
+  -- Check if in visual mode and add line numbers
+  local mode = vim.fn.mode()
+  if mode == "v" or mode == "V" or mode == "\22" then
+    -- Exit visual mode to update the marks
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'x', false)
+
+    local start_line = vim.fn.getpos("'<")[2]
+    local end_line = vim.fn.getpos("'>")[2]
+
+    relative_path = relative_path .. string.format("#L%d-L%d", start_line, end_line)
   end
 
   send_to_claude_pane(relative_path, "Sent filepath to Claude Code: " .. relative_path)
@@ -148,6 +160,6 @@ keymap.set("n", "<leader><leader>m", "<cmd>!mux split<cr><cr>", default_opts)
 keymap.set("n", "<leader><leader>s", "<cmd>set nonumber<cr>", default_opts)
 keymap.set("n", "<leader><leader>p", "<cmd>set number<cr>", default_opts)
 keymap.set({"n", "v"}, "<leader><leader>c", send_to_claude, default_opts)
-keymap.set("n", "<leader><leader>f", send_filepath_to_claude, default_opts)
+keymap.set({"n", "v"}, "<leader><leader>f", send_filepath_to_claude, default_opts)
 keymap.set("n", "<leader><leader>y", copy_filepath_to_clipboard, default_opts)
 keymap.set("n", "<leader>np", open_prompt_notes, default_opts)
