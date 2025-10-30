@@ -74,7 +74,22 @@ local function send_filepath_to_claude()
     return
   end
 
-  send_to_claude_pane(filepath, "Sent filepath to Claude Code: " .. filepath)
+  local cwd = vim.fn.getcwd()
+  local home = vim.fn.expand("~")
+  local relative_path
+
+  -- Try relative to current workspace first
+  if filepath:sub(1, #cwd) == cwd then
+    relative_path = filepath:sub(#cwd + 2) -- +2 to skip the trailing slash
+  -- Try relative to home directory
+  elseif filepath:sub(1, #home) == home then
+    relative_path = "~" .. filepath:sub(#home + 1)
+  -- Use absolute path for everything else
+  else
+    relative_path = filepath
+  end
+
+  send_to_claude_pane(relative_path, "Sent filepath to Claude Code: " .. relative_path)
 end
 
 local function copy_filepath_to_clipboard()
