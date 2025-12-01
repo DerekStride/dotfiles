@@ -9,3 +9,5 @@ node_modules
 tmp/
 .git/
 *.luarc.json
+.claude/settings.local.json
+CLAUDE.local.md
