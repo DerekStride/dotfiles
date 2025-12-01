@@ -1,0 +1,58 @@
+#!/usr/bin/env ruby
+
+require 'csv'
+require 'terminal-table'
+require 'debug'
+
+def format_milliseconds(duration)
+  millis = duration.to_f / 1000.0
+
+  if millis > 1.0
+    "#{millis.to_f.round(2)} ms"
+  else
+    "#{duration.to_f.round(2)} µs"
+  end
+end
+
+def main
+  # Read CSV from stdin
+  csv_data = CSV.parse($stdin.read, headers: true)
+
+  # Convert to array of arrays for terminal-table
+  rows = csv_data.map(&:fields)
+  headers = csv_data.headers
+
+  if headers.first == "Time"
+    headers.shift
+    rows.each(&:shift)
+  end
+
+  rows.map! do |row|
+    row.map! do |column|
+      case column
+      when /^\d+\.\d+$/
+        format_milliseconds(column)
+      else
+        column
+      end
+    end
+  end
+
+  # Create and display the table
+  table = Terminal::Table.new do |t|
+    t.headings = headers
+    t.rows = rows
+    t.style = {
+      border_top: false,
+      border_bottom: false,
+      border_left: false,
+      border_right: false,
+      padding_left: 1,
+      padding_right: 1
+    }
+  end
+
+  puts table
+end
+
+main

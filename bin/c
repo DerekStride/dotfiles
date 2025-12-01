@@ -1,0 +1,69 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/inline"
+require "optparse"
+require "logger"
+
+$stdout.sync = $stderr.sync = true
+
+def level = ENV.fetch("LOG_LEVEL", Logger::WARN)
+def progname = File.basename($0)
+def logger = @logger ||= Logger.new($stderr, level:, progname:)
+def options = @options ||= { mcp: [], env: {} }
+
+gemfile do
+  source "https://rubygems.org"
+  gem "debug"
+end
+
+OptionParser.new do |o|
+  o.banner = "usage: #{progname} [options] [claude-code-args]"
+  o.separator ""
+  o.separator "Options:"
+
+  o.on("-v", "--verbose", "Enable verbose logging") { logger.level -= 1 }
+
+  o.on("-m", "--mcp=SERVERS", Array, "MCP servers to enable (comma-separated)") do |servers|
+    options[:mcp] = servers
+  end
+
+  o.on("-e", "--env=KEY=VALUE", "Set environment variable (can be used multiple times)") do |env_pair|
+    key, value = env_pair.split("=", 2)
+    if key && value
+      options[:env][key] = value
+    else
+      logger.error("Invalid environment variable format: #{env_pair}")
+      exit(1)
+    end
+  end
+end.parse!(into: options)
+
+logger.debug("options=#{options}")
+logger.debug("remaining args=#{ARGV}")
+
+def main
+  cmd = ["claude"]
+
+  # Add MCP servers if specified
+  unless options[:mcp].empty?
+    mcp_arg = "--mcp=#{options[:mcp].join(',')}"
+    cmd << mcp_arg
+    logger.info("Enabling MCP servers: #{options[:mcp].join(', ')}")
+  end
+
+  # Pass through any additional arguments
+  cmd.concat(ARGV)
+
+  # Log environment variables if in debug mode
+  unless env.empty?
+    logger.debug("Setting environment variables: #{env.keys.join(', ')}")
+  end
+
+  logger.debug("Executing: #{cmd.join(' ')}")
+
+  # Execute with modified environment
+  exec(env, *cmd)
+end
+
+main
