@@ -64,6 +64,8 @@ Usage: mux [options]
 HELP
 }
 
+createSession bg-tasks primary -c "~/src"
+
 if [ "$1" == "run" ]; then
   shift
   mux-run $@
