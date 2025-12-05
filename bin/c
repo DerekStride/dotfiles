@@ -4,62 +4,130 @@
 require "bundler/inline"
 require "optparse"
 require "logger"
+require "json"
 
 $stdout.sync = $stderr.sync = true
 
+DOTFILES_DIR = File.expand_path("~/.dotfiles")
+MCP_CONFIG_PATH = File.join(DOTFILES_DIR, "data", "mcp.json")
+TMP_MCP_CONFIG = "/tmp/mcp.json"
+
 def level = ENV.fetch("LOG_LEVEL", Logger::WARN)
 def progname = File.basename($0)
-def logger = @logger ||= Logger.new($stderr, level:, progname:)
-def options = @options ||= { mcp: [], env: {} }
+def logger = @logger ||= Logger.new($stderr, level:, progname: 'claude')
+def options = @options ||= {}
+def env = {}
 
 gemfile do
   source "https://rubygems.org"
   gem "debug"
 end
 
-OptionParser.new do |o|
+def load_mcp_config
+  JSON.parse(File.read(MCP_CONFIG_PATH))
+rescue Errno::ENOENT
+  logger.error("MCP config not found: #{MCP_CONFIG_PATH}")
+  exit(1)
+rescue JSON::ParserError => e
+  logger.error("Invalid JSON in MCP config: #{e.message}")
+  exit(1)
+end
+
+def available_servers
+  load_mcp_config.dig("mcpServers")&.keys || []
+end
+
+def select_servers_with_fzf
+  servers = available_servers
+  if servers.empty?
+    logger.error("No MCP servers found in #{MCP_CONFIG_PATH}")
+    exit(1)
+  end
+
+  IO.popen(["fzf", "--multi", "--prompt=Select MCP servers> "], "r+") do |fzf|
+    fzf.puts(servers.join("\n"))
+    fzf.close_write
+    fzf.read.split("\n").map(&:strip).reject(&:empty?)
+  end
+rescue Errno::ENOENT
+  logger.error("fzf not found. Install fzf or specify servers with --mcp=server1,server2")
+  exit(1)
+end
+
+def write_mcp_config(server_keys)
+  full_config = load_mcp_config
+  all_servers = full_config["mcpServers"] || {}
+
+  selected_servers = server_keys.each_with_object({}) do |key, hash|
+    if all_servers.key?(key)
+      hash[key] = all_servers[key]
+    else
+      logger.warn("Unknown MCP server: #{key}")
+    end
+  end
+
+  if selected_servers.empty?
+    logger.error("No valid MCP servers selected")
+    exit(1)
+  end
+
+  output = { "mcpServers" => selected_servers }
+  File.write(TMP_MCP_CONFIG, JSON.pretty_generate(output))
+  logger.info("Wrote MCP config to #{TMP_MCP_CONFIG}")
+  TMP_MCP_CONFIG
+end
+
+parser = OptionParser.new do |o|
   o.banner = "usage: #{progname} [options] [claude-code-args]"
   o.separator ""
   o.separator "Options:"
 
   o.on("-v", "--verbose", "Enable verbose logging") { logger.level -= 1 }
 
-  o.on("-m", "--mcp=SERVERS", Array, "MCP servers to enable (comma-separated)") do |servers|
-    options[:mcp] = servers
+  o.on("-m", "--mcp [SERVERS]", Array, "MCP servers to enable (comma-separated, or omit for fzf selection)") do |servers|
+    options[:mcp] = servers || :fzf
   end
+end
 
-  o.on("-e", "--env=KEY=VALUE", "Set environment variable (can be used multiple times)") do |env_pair|
-    key, value = env_pair.split("=", 2)
-    if key && value
-      options[:env][key] = value
-    else
-      logger.error("Invalid environment variable format: #{env_pair}")
-      exit(1)
-    end
-  end
-end.parse!(into: options)
+parser.parse!
 
 logger.debug("options=#{options}")
 logger.debug("remaining args=#{ARGV}")
 
 def main
-  cmd = ["claude"]
+  cmd = [
+    "/opt/dev/bin/devx",
+    "claude",
+    "--",
+    "--strict-mcp-config",
+  ]
 
-  # Add MCP servers if specified
-  unless options[:mcp].empty?
-    mcp_arg = "--mcp=#{options[:mcp].join(',')}"
-    cmd << mcp_arg
-    logger.info("Enabling MCP servers: #{options[:mcp].join(', ')}")
+  # Handle MCP server selection
+  case options[:mcp]
+  when :fzf
+    servers = select_servers_with_fzf
+    if servers.empty?
+      logger.info("No servers selected, starting without MCP")
+    else
+      config_path = write_mcp_config(servers)
+      cmd << "--mcp-config" << config_path
+      logger.info("Enabling MCP servers: #{servers.join(', ')}")
+    end
+  when Array
+    if options[:mcp].any?
+      config_path = write_mcp_config(options[:mcp])
+      cmd << "--mcp-config" << config_path
+      logger.info("Enabling MCP servers: #{options[:mcp].join(', ')}")
+    end
+  when nil
+    # No --mcp flag passed, start without MCP servers
+    logger.debug("No MCP servers requested")
   end
 
   # Pass through any additional arguments
   cmd.concat(ARGV)
 
   # Log environment variables if in debug mode
-  unless env.empty?
-    logger.debug("Setting environment variables: #{env.keys.join(', ')}")
-  end
-
   logger.debug("Executing: #{cmd.join(' ')}")
 
   # Execute with modified environment
