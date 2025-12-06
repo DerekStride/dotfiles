@@ -98,7 +98,11 @@ local function send_filepath_to_claude()
     local start_line = vim.fn.getpos("'<")[2]
     local end_line = vim.fn.getpos("'>")[2]
 
-    relative_path = relative_path .. string.format("#L%d-L%d", start_line, end_line)
+    if start_line == end_line then
+      relative_path = relative_path .. string.format("#L%d", start_line)
+    else
+      relative_path = relative_path .. string.format("#L%d-L%d", start_line, end_line)
+    end
   end
 
   send_to_claude_pane(relative_path, "Sent filepath to Claude Code: " .. relative_path)
