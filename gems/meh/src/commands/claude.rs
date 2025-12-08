@@ -1,4 +1,5 @@
 use crate::error::{MehError, Result};
+use std::cmp::Ordering;
 use std::io::Write;
 use std::process::{Command, Stdio};
 
@@ -14,31 +15,49 @@ pub struct ClaudePane {
     pub status: ClaudeStatus,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ClaudeStatus {
-    Idle,
     AwaitingInput(String),
     Working,
-    Unknown,
+    Idle,
 }
 
 impl ClaudeStatus {
     fn icon(&self) -> &'static str {
         match self {
-            ClaudeStatus::Idle => "💤",
             ClaudeStatus::AwaitingInput(_) => "⏳",
             ClaudeStatus::Working => "🔄",
-            ClaudeStatus::Unknown => "❓",
+            ClaudeStatus::Idle => "💤",
         }
     }
 
     fn label(&self) -> String {
         match self {
-            ClaudeStatus::Idle => "Idle".to_string(),
             ClaudeStatus::AwaitingInput(msg) => format!("Awaiting: {}", msg),
             ClaudeStatus::Working => "Working".to_string(),
-            ClaudeStatus::Unknown => "Unknown".to_string(),
+            ClaudeStatus::Idle => "Idle".to_string(),
         }
+    }
+
+    /// Sort priority: AwaitingInput (0) > Working (1) > Idle (2)
+    fn priority(&self) -> u8 {
+        match self {
+            ClaudeStatus::AwaitingInput(_) => 0,
+            ClaudeStatus::Working => 1,
+            ClaudeStatus::Idle => 2,
+        }
+    }
+}
+
+impl Ord for ClaudeStatus {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.priority().cmp(&other.priority())
+    }
+}
+
+impl PartialOrd for ClaudeStatus {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 
@@ -49,7 +68,7 @@ impl ClaudePane {
         let short_path = path.split('/').last().unwrap_or(&path);
 
         format!(
-            "{} {} │ {}:{} │ {}",
+            "{} {:<20} │ {}:{} │ {}",
             self.status.icon(),
             self.status.label(),
             self.session_name,
@@ -72,11 +91,14 @@ pub fn run() -> Result<()> {
         return Err(MehError::FzfNotFound);
     }
 
-    let panes = list_claude_panes()?;
+    let mut panes = list_claude_panes()?;
 
     if panes.is_empty() {
         return Err(MehError::NoPanesAvailable);
     }
+
+    // Sort by status priority: AwaitingInput first, Working middle, Idle last
+    panes.sort_by(|a, b| a.status.cmp(&b.status));
 
     let selected = select_pane_with_fzf(&panes)?;
 
@@ -86,8 +108,39 @@ pub fn run() -> Result<()> {
     Ok(())
 }
 
+/// Check if a pane is actually running Claude Code by examining its content
+fn is_claude_pane(pane_id: &str) -> bool {
+    let output = Command::new("tmux")
+        .args(["capture-pane", "-t", pane_id, "-p"])
+        .output();
+
+    let content = match output {
+        Ok(o) if o.status.success() => String::from_utf8_lossy(&o.stdout).to_string(),
+        _ => return false,
+    };
+
+    // Claude Code has distinctive UI elements:
+    // 1. Horizontal line separators made of ─ characters
+    // 2. The > prompt for input
+    // 3. Footer hints like "? for shortcuts" or "⏵⏵ accept edits"
+    // 4. Tool output markers like ⏺ (filled circle)
+
+    let has_separator = content.contains('─');
+    let has_prompt = content.lines().any(|l| {
+        let trimmed = l.trim();
+        trimmed == ">" || trimmed.starts_with("> ")
+    });
+    let has_footer = content.contains("? for shortcuts")
+        || content.contains("⏵⏵")
+        || content.contains("shift+tab");
+    let has_tool_marker = content.contains('⏺');
+
+    // Must have at least 2 of these indicators to be considered Claude
+    let indicators = [has_separator, has_prompt, has_footer, has_tool_marker];
+    indicators.iter().filter(|&&x| x).count() >= 2
+}
+
 fn list_claude_panes() -> Result<Vec<ClaudePane>> {
-    // List all panes with node command (Claude Code runs on Node.js)
     let output = Command::new("tmux")
         .args([
             "list-panes",
@@ -107,6 +160,12 @@ fn list_claude_panes() -> Result<Vec<ClaudePane>> {
             let parts: Vec<&str> = line.split('|').collect();
             if parts.len() >= 7 && parts[5] == "node" {
                 let pane_id = parts[0].to_string();
+
+                // Verify this is actually a Claude Code pane
+                if !is_claude_pane(&pane_id) {
+                    return None;
+                }
+
                 let status = get_pane_status(&pane_id);
 
                 Some(ClaudePane {
@@ -134,60 +193,76 @@ fn get_pane_status(pane_id: &str) -> ClaudeStatus {
 
     let content = match output {
         Ok(o) if o.status.success() => String::from_utf8_lossy(&o.stdout).to_string(),
-        _ => return ClaudeStatus::Unknown,
+        _ => return ClaudeStatus::Idle,
     };
 
-    // Get the last ~10 lines for status detection
-    let lines: Vec<&str> = content.lines().rev().take(15).collect();
-    let recent = lines.join("\n").to_lowercase();
+    // Get the last section of the pane (after last separator)
+    let lines: Vec<&str> = content.lines().collect();
 
-    // Check for various status indicators
-    if recent.contains("accept edits") || recent.contains("shift+tab") {
+    // Find the last separator line and get content after it
+    let last_sep_idx = lines.iter().rposition(|l| {
+        l.chars().all(|c| c == '─' || c.is_whitespace()) && l.contains('─')
+    });
+
+    let footer_lines: Vec<&str> = match last_sep_idx {
+        Some(idx) => lines[idx..].to_vec(),
+        None => lines.iter().rev().take(10).copied().collect(),
+    };
+    let footer = footer_lines.join("\n").to_lowercase();
+
+    // Check for awaiting input states (most specific first)
+    if footer.contains("⏵⏵") || footer.contains("accept edits") || footer.contains("shift+tab") {
         return ClaudeStatus::AwaitingInput("accept edits".to_string());
     }
 
-    if recent.contains("y/n") || recent.contains("[y]") || recent.contains("(y/n)") {
-        return ClaudeStatus::AwaitingInput("y/n prompt".to_string());
-    }
-
-    if recent.contains("approve?") || recent.contains("permission") {
+    if footer.contains("allow once") || footer.contains("allow always") {
         return ClaudeStatus::AwaitingInput("permission".to_string());
     }
 
-    // Check for working indicators (spinner characters, progress)
-    if recent.contains("⠋") || recent.contains("⠙") || recent.contains("⠹")
-        || recent.contains("⠸") || recent.contains("⠼") || recent.contains("⠴")
-        || recent.contains("⠦") || recent.contains("⠧") || recent.contains("⠇")
-        || recent.contains("⠏")
-    {
+    if footer.contains("(y/n)") || footer.contains("[y/n]") || footer.contains("y/n?") {
+        return ClaudeStatus::AwaitingInput("confirm".to_string());
+    }
+
+    // Check for working state - look in the visible content area
+    let visible_content = lines.iter().rev().take(20).copied().collect::<Vec<_>>().join("\n");
+
+    // Spinner characters indicate active work
+    let spinners = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+    if spinners.iter().any(|&s| visible_content.contains(s)) {
         return ClaudeStatus::Working;
     }
 
-    // Check for tool usage indicators
-    if recent.contains("running") || recent.contains("reading") || recent.contains("writing")
-        || recent.contains("searching") || recent.contains("executing")
-    {
+    // Active tool indicators (look for uncompleted tool output)
+    if visible_content.contains("⏺ Bash(") && !visible_content.contains("⎿") {
         return ClaudeStatus::Working;
     }
 
-    // Check for idle - prompt with just ">"
-    let last_nonblank: Vec<&str> = content
-        .lines()
-        .rev()
-        .filter(|l| !l.trim().is_empty() && !l.contains('─'))
-        .take(3)
+    if visible_content.contains("⏺ Read(") && !visible_content.contains("⎿") {
+        return ClaudeStatus::Working;
+    }
+
+    // Check if there's a prompt waiting for input (idle state)
+    let non_empty_lines: Vec<&str> = footer_lines
+        .iter()
+        .filter(|l| !l.trim().is_empty() && !l.chars().all(|c| c == '─' || c.is_whitespace()))
+        .copied()
         .collect();
 
-    if last_nonblank.iter().any(|l| l.trim() == ">" || l.trim().starts_with("> ")) {
+    // If the last meaningful line is just ">" or starts with "> ", it's idle
+    if let Some(last) = non_empty_lines.last() {
+        let trimmed = last.trim();
+        if trimmed == ">" || (trimmed.starts_with(">") && trimmed.len() < 3) {
+            return ClaudeStatus::Idle;
+        }
+    }
+
+    // Default to idle if we have shortcuts hint
+    if footer.contains("? for shortcuts") {
         return ClaudeStatus::Idle;
     }
 
-    // Check for shortcuts hint (idle state)
-    if recent.contains("? for shortcuts") {
-        return ClaudeStatus::Idle;
-    }
-
-    ClaudeStatus::Unknown
+    // If nothing else matched but it's a Claude pane, assume working
+    ClaudeStatus::Working
 }
 
 fn select_pane_with_fzf(panes: &[ClaudePane]) -> Result<&ClaudePane> {
@@ -207,6 +282,7 @@ fn select_pane_with_fzf(panes: &[ClaudePane]) -> Result<&ClaudePane> {
             "--with-nth=2..",
             "--delimiter=|",
             "--ansi",
+            "--no-preview",
         ])
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
