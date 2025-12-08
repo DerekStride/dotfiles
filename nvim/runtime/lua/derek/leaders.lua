@@ -13,6 +13,41 @@ local function find_claude_pane()
   return claude_pane
 end
 
+local function get_relative_filepath(filepath)
+  local cwd = vim.fn.getcwd()
+  local home = vim.fn.expand("~")
+  local relative_path
+
+  -- Try relative to current workspace first
+  if filepath:sub(1, #cwd) == cwd then
+    relative_path = filepath:sub(#cwd + 2) -- +2 to skip the trailing slash
+  -- Try relative to home directory
+  elseif filepath:sub(1, #home) == home then
+    relative_path = "~" .. filepath:sub(#home + 1)
+  -- Use absolute path for everything else
+  else
+    relative_path = filepath
+  end
+
+  -- Check if in visual mode and add line numbers
+  local mode = vim.fn.mode()
+  if mode == "v" or mode == "V" or mode == "\22" then
+    -- Exit visual mode to update the marks
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'x', false)
+
+    local start_line = vim.fn.getpos("'<")[2]
+    local end_line = vim.fn.getpos("'>")[2]
+
+    if start_line == end_line then
+      relative_path = relative_path .. string.format("#L%d", start_line)
+    else
+      relative_path = relative_path .. string.format("#L%d-L%d", start_line, end_line)
+    end
+  end
+
+  return relative_path
+end
+
 local function send_to_claude_pane(content, description)
   local claude_pane = find_claude_pane()
   if not claude_pane then
@@ -74,36 +109,7 @@ local function send_filepath_to_claude()
     return
   end
 
-  local cwd = vim.fn.getcwd()
-  local home = vim.fn.expand("~")
-  local relative_path
-
-  -- Try relative to current workspace first
-  if filepath:sub(1, #cwd) == cwd then
-    relative_path = "@" .. filepath:sub(#cwd + 2) -- +2 to skip the trailing slash
-  -- Try relative to home directory
-  elseif filepath:sub(1, #home) == home then
-    relative_path = "@~" .. filepath:sub(#home + 1)
-  -- Use absolute path for everything else
-  else
-    relative_path = "@" .. filepath
-  end
-
-  -- Check if in visual mode and add line numbers
-  local mode = vim.fn.mode()
-  if mode == "v" or mode == "V" or mode == "\22" then
-    -- Exit visual mode to update the marks
-    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'x', false)
-
-    local start_line = vim.fn.getpos("'<")[2]
-    local end_line = vim.fn.getpos("'>")[2]
-
-    if start_line == end_line then
-      relative_path = relative_path .. string.format("#L%d", start_line)
-    else
-      relative_path = relative_path .. string.format("#L%d-L%d", start_line, end_line)
-    end
-  end
+  local relative_path = "@" .. get_relative_filepath(filepath)
 
   send_to_claude_pane(relative_path, "Sent filepath to Claude Code: " .. relative_path)
 end
@@ -116,7 +122,7 @@ local function copy_filepath_to_clipboard()
     return
   end
 
-  local relative_filepath = vim.fn.fnamemodify(filepath, ':.')
+  local relative_filepath = get_relative_filepath(filepath)
 
   vim.fn.setreg('+', relative_filepath)
   vim.fn.setreg('*', relative_filepath)
@@ -165,5 +171,5 @@ keymap.set("n", "<leader><leader>s", "<cmd>set nonumber<cr>", default_opts)
 keymap.set("n", "<leader><leader>p", "<cmd>set number<cr>", default_opts)
 keymap.set({"n", "v"}, "<leader><leader>c", send_to_claude, default_opts)
 keymap.set({"n", "v"}, "<leader><leader>f", send_filepath_to_claude, default_opts)
-keymap.set("n", "<leader><leader>y", copy_filepath_to_clipboard, default_opts)
+keymap.set({"n", "v"}, "<leader><leader>y", copy_filepath_to_clipboard, default_opts)
 keymap.set("n", "<leader>np", open_prompt_notes, default_opts)
