@@ -5,7 +5,7 @@ require 'terminal-table'
 require 'debug'
 
 def format_milliseconds(duration)
-  millis = duration.to_f / 1000.0
+  millis = duration.to_f
 
   if millis > 1.0
     "#{millis.to_f.round(2)} ms"
