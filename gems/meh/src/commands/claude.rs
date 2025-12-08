@@ -1,19 +1,7 @@
 use crate::error::{MehError, Result};
-use chrono::{DateTime, Utc};
-use serde::Deserialize;
 use std::cmp::Ordering;
-use std::fs;
-use std::io::{BufRead, BufReader, Write};
-use std::path::PathBuf;
+use std::io::Write;
 use std::process::{Command, Stdio};
-
-/// Entry from Claude's session JSONL file
-#[derive(Debug, Deserialize)]
-struct SessionEntry {
-    #[serde(rename = "type")]
-    entry_type: Option<String>,
-    timestamp: Option<String>,
-}
 
 /// Represents a Claude Code pane
 #[derive(Debug)]
@@ -51,6 +39,7 @@ impl ClaudeStatus {
         }
     }
 
+    /// Sort priority: AwaitingInput (0) > Working (1) > Idle (2)
     fn priority(&self) -> u8 {
         match self {
             ClaudeStatus::AwaitingInput(_) => 0,
@@ -108,129 +97,18 @@ pub fn run() -> Result<()> {
         return Err(MehError::NoPanesAvailable);
     }
 
+    // Sort by status priority: AwaitingInput first, Working middle, Idle last
     panes.sort_by(|a, b| a.status.cmp(&b.status));
 
     let selected = select_pane_with_fzf(&panes)?;
+
+    // Switch to the selected session and window
     switch_to_pane(&selected)?;
 
     Ok(())
 }
 
-/// Encode a cwd path to Claude's project folder format
-/// /Users/derek/.dotfiles -> -Users-derek--dotfiles
-fn encode_project_path(cwd: &str) -> String {
-    cwd.replace('/', "-")
-}
-
-/// Find the most recently modified session file for a project
-fn find_session_file(cwd: &str) -> Option<PathBuf> {
-    let home = std::env::var("HOME").ok()?;
-    let encoded = encode_project_path(cwd);
-    let project_dir = PathBuf::from(format!("{}/.claude/projects/{}", home, encoded));
-
-    if !project_dir.exists() {
-        return None;
-    }
-
-    // Find the most recently modified .jsonl file
-    fs::read_dir(&project_dir)
-        .ok()?
-        .filter_map(|e| e.ok())
-        .filter(|e| {
-            e.path()
-                .extension()
-                .map(|ext| ext == "jsonl")
-                .unwrap_or(false)
-        })
-        .max_by_key(|e| e.metadata().and_then(|m| m.modified()).ok())
-        .map(|e| e.path())
-}
-
-/// Read the last line of a JSONL file efficiently
-fn read_last_jsonl_entry(path: &PathBuf) -> Option<SessionEntry> {
-    let file = fs::File::open(path).ok()?;
-    let reader = BufReader::new(file);
-
-    // Read all lines and get the last non-empty one
-    let last_line = reader
-        .lines()
-        .filter_map(|l| l.ok())
-        .filter(|l| !l.trim().is_empty())
-        .last()?;
-
-    serde_json::from_str(&last_line).ok()
-}
-
-/// Get status from Claude's session file
-fn get_status_from_session(cwd: &str) -> Option<ClaudeStatus> {
-    let session_file = find_session_file(cwd)?;
-    let entry = read_last_jsonl_entry(&session_file)?;
-
-    let entry_type = entry.entry_type.as_deref()?;
-    let timestamp_str = entry.timestamp.as_deref()?;
-
-    // Parse timestamp
-    let timestamp = DateTime::parse_from_rfc3339(timestamp_str)
-        .ok()?
-        .with_timezone(&Utc);
-    let age = Utc::now().signed_duration_since(timestamp);
-
-    match entry_type {
-        "user" => Some(ClaudeStatus::Working), // Claude processing user input
-        "assistant" => {
-            // If response was recent (< 30s), might still be streaming
-            if age.num_seconds() < 30 {
-                Some(ClaudeStatus::Working)
-            } else {
-                Some(ClaudeStatus::Idle)
-            }
-        }
-        _ => None,
-    }
-}
-
-/// Check pane content for UI-specific awaiting states
-fn check_pane_for_awaiting(pane_id: &str) -> Option<ClaudeStatus> {
-    let output = Command::new("tmux")
-        .args(["capture-pane", "-t", pane_id, "-p"])
-        .output()
-        .ok()?;
-
-    if !output.status.success() {
-        return None;
-    }
-
-    let content = String::from_utf8_lossy(&output.stdout);
-    let lines: Vec<&str> = content.lines().collect();
-
-    // Get footer area (after last separator)
-    let last_sep_idx = lines.iter().rposition(|l| {
-        l.chars().all(|c| c == '─' || c.is_whitespace()) && l.contains('─')
-    });
-
-    let footer_lines: Vec<&str> = match last_sep_idx {
-        Some(idx) => lines[idx..].to_vec(),
-        None => lines.iter().rev().take(10).copied().collect(),
-    };
-    let footer = footer_lines.join("\n").to_lowercase();
-
-    // Check for UI-specific awaiting states
-    if footer.contains("⏵⏵") || footer.contains("accept edits") || footer.contains("shift+tab") {
-        return Some(ClaudeStatus::AwaitingInput("accept edits".to_string()));
-    }
-
-    if footer.contains("allow once") || footer.contains("allow always") {
-        return Some(ClaudeStatus::AwaitingInput("permission".to_string()));
-    }
-
-    if footer.contains("(y/n)") || footer.contains("[y/n]") || footer.contains("y/n?") {
-        return Some(ClaudeStatus::AwaitingInput("confirm".to_string()));
-    }
-
-    None
-}
-
-/// Check if a pane is actually running Claude Code
+/// Check if a pane is actually running Claude Code by examining its content
 fn is_claude_pane(pane_id: &str) -> bool {
     let output = Command::new("tmux")
         .args(["capture-pane", "-t", pane_id, "-p"])
@@ -240,6 +118,12 @@ fn is_claude_pane(pane_id: &str) -> bool {
         Ok(o) if o.status.success() => String::from_utf8_lossy(&o.stdout).to_string(),
         _ => return false,
     };
+
+    // Claude Code has distinctive UI elements:
+    // 1. Horizontal line separators made of ─ characters
+    // 2. The > prompt for input
+    // 3. Footer hints like "? for shortcuts" or "⏵⏵ accept edits"
+    // 4. Tool output markers like ⏺ (filled circle)
 
     let has_separator = content.contains('─');
     let has_prompt = content.lines().any(|l| {
@@ -251,6 +135,7 @@ fn is_claude_pane(pane_id: &str) -> bool {
         || content.contains("shift+tab");
     let has_tool_marker = content.contains('⏺');
 
+    // Must have at least 2 of these indicators to be considered Claude
     let indicators = [has_separator, has_prompt, has_footer, has_tool_marker];
     indicators.iter().filter(|&&x| x).count() >= 2
 }
@@ -275,16 +160,13 @@ fn list_claude_panes() -> Result<Vec<ClaudePane>> {
             let parts: Vec<&str> = line.split('|').collect();
             if parts.len() >= 7 && parts[5] == "node" {
                 let pane_id = parts[0].to_string();
-                let pane_path = parts[6].to_string();
 
+                // Verify this is actually a Claude Code pane
                 if !is_claude_pane(&pane_id) {
                     return None;
                 }
 
-                // Try file-based status first, then check for awaiting states
-                let status = check_pane_for_awaiting(&pane_id)
-                    .or_else(|| get_status_from_session(&pane_path))
-                    .unwrap_or(ClaudeStatus::Idle);
+                let status = get_pane_status(&pane_id);
 
                 Some(ClaudePane {
                     pane_id,
@@ -292,7 +174,7 @@ fn list_claude_panes() -> Result<Vec<ClaudePane>> {
                     window_index: parts[2].to_string(),
                     window_name: parts[3].to_string(),
                     pane_index: parts[4].to_string(),
-                    pane_path,
+                    pane_path: parts[6].to_string(),
                     status,
                 })
             } else {
@@ -302,6 +184,85 @@ fn list_claude_panes() -> Result<Vec<ClaudePane>> {
         .collect();
 
     Ok(panes)
+}
+
+fn get_pane_status(pane_id: &str) -> ClaudeStatus {
+    let output = Command::new("tmux")
+        .args(["capture-pane", "-t", pane_id, "-p"])
+        .output();
+
+    let content = match output {
+        Ok(o) if o.status.success() => String::from_utf8_lossy(&o.stdout).to_string(),
+        _ => return ClaudeStatus::Idle,
+    };
+
+    // Get the last section of the pane (after last separator)
+    let lines: Vec<&str> = content.lines().collect();
+
+    // Find the last separator line and get content after it
+    let last_sep_idx = lines.iter().rposition(|l| {
+        l.chars().all(|c| c == '─' || c.is_whitespace()) && l.contains('─')
+    });
+
+    let footer_lines: Vec<&str> = match last_sep_idx {
+        Some(idx) => lines[idx..].to_vec(),
+        None => lines.iter().rev().take(10).copied().collect(),
+    };
+    let footer = footer_lines.join("\n").to_lowercase();
+
+    // Check for awaiting input states (most specific first)
+    if footer.contains("⏵⏵") || footer.contains("accept edits") || footer.contains("shift+tab") {
+        return ClaudeStatus::AwaitingInput("accept edits".to_string());
+    }
+
+    if footer.contains("allow once") || footer.contains("allow always") {
+        return ClaudeStatus::AwaitingInput("permission".to_string());
+    }
+
+    if footer.contains("(y/n)") || footer.contains("[y/n]") || footer.contains("y/n?") {
+        return ClaudeStatus::AwaitingInput("confirm".to_string());
+    }
+
+    // Check for working state - look in the visible content area
+    let visible_content = lines.iter().rev().take(20).copied().collect::<Vec<_>>().join("\n");
+
+    // Spinner characters indicate active work
+    let spinners = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+    if spinners.iter().any(|&s| visible_content.contains(s)) {
+        return ClaudeStatus::Working;
+    }
+
+    // Active tool indicators (look for uncompleted tool output)
+    if visible_content.contains("⏺ Bash(") && !visible_content.contains("⎿") {
+        return ClaudeStatus::Working;
+    }
+
+    if visible_content.contains("⏺ Read(") && !visible_content.contains("⎿") {
+        return ClaudeStatus::Working;
+    }
+
+    // Check if there's a prompt waiting for input (idle state)
+    let non_empty_lines: Vec<&str> = footer_lines
+        .iter()
+        .filter(|l| !l.trim().is_empty() && !l.chars().all(|c| c == '─' || c.is_whitespace()))
+        .copied()
+        .collect();
+
+    // If the last meaningful line is just ">" or starts with "> ", it's idle
+    if let Some(last) = non_empty_lines.last() {
+        let trimmed = last.trim();
+        if trimmed == ">" || (trimmed.starts_with(">") && trimmed.len() < 3) {
+            return ClaudeStatus::Idle;
+        }
+    }
+
+    // Default to idle if we have shortcuts hint
+    if footer.contains("? for shortcuts") {
+        return ClaudeStatus::Idle;
+    }
+
+    // If nothing else matched but it's a Claude pane, assume working
+    ClaudeStatus::Working
 }
 
 fn select_pane_with_fzf(panes: &[ClaudePane]) -> Result<&ClaudePane> {
@@ -345,6 +306,7 @@ fn select_pane_with_fzf(panes: &[ClaudePane]) -> Result<&ClaudePane> {
 }
 
 fn switch_to_pane(pane: &ClaudePane) -> Result<()> {
+    // Switch to the session
     let status = Command::new("tmux")
         .args(["switch-client", "-t", &pane.target()])
         .status()?;
@@ -353,6 +315,7 @@ fn switch_to_pane(pane: &ClaudePane) -> Result<()> {
         return Err(MehError::TmuxCommand("Failed to switch to pane".into()));
     }
 
+    // Select the specific pane
     let status = Command::new("tmux")
         .args(["select-pane", "-t", &pane.pane_id])
         .status()?;
