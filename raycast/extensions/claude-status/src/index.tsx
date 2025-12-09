@@ -1,151 +1,54 @@
-import { ActionPanel, Action, List, Icon, Color, showToast, Toast } from "@raycast/api";
+import { ActionPanel, Action, List, Icon, showToast, Toast } from "@raycast/api";
 import { useState, useEffect } from "react";
-import { readdirSync, readFileSync, existsSync } from "fs";
-import { homedir } from "os";
-import { join } from "path";
 import { execSync } from "child_process";
+import {
+  listClaudePanes,
+  switchToPane,
+  shortenPath,
+  getStatusIcon,
+  getStatusLabel,
+  TMUX,
+  type ClaudePane,
+} from "./utils";
 
-const TMUX = "/opt/homebrew/bin/tmux";
-
-interface ClaudeStatus {
-  status: "idle" | "working" | "awaiting";
-  cwd?: string;
-  timestamp?: number;
-}
-
-interface ClaudePane {
-  paneId: string;
-  sessionName: string;
-  windowIndex: string;
-  windowName: string;
-  paneIndex: string;
-  panePath: string;
-  status: ClaudeStatus | null;
-}
-
-function getStatusIcon(status: ClaudeStatus | null): { source: Icon; tintColor: Color } {
-  if (!status) {
-    return { source: Icon.QuestionMark, tintColor: Color.SecondaryText };
-  }
-  switch (status.status) {
-    case "awaiting":
-      return { source: Icon.Clock, tintColor: Color.Yellow };
-    case "working":
-      return { source: Icon.CircleProgress, tintColor: Color.Blue };
-    case "idle":
-      return { source: Icon.Moon, tintColor: Color.SecondaryText };
-    default:
-      return { source: Icon.QuestionMark, tintColor: Color.SecondaryText };
-  }
-}
-
-function getStatusLabel(status: ClaudeStatus | null): string {
-  if (!status) return "Unknown";
-  switch (status.status) {
-    case "awaiting":
-      return "Awaiting Input";
-    case "working":
-      return "Working";
-    case "idle":
-      return "Idle";
-    default:
-      return "Unknown";
-  }
-}
-
-function getStatusPriority(status: ClaudeStatus | null): number {
-  if (!status) return 3;
-  switch (status.status) {
-    case "awaiting":
-      return 0;
-    case "working":
-      return 1;
-    case "idle":
-      return 2;
-    default:
-      return 3;
-  }
-}
-
-function readStatusFile(paneId: string): ClaudeStatus | null {
-  const statusPath = join(homedir(), ".claude", "status", `${paneId}.json`);
+function handleSwitchToPane(pane: ClaudePane) {
   try {
-    if (!existsSync(statusPath)) return null;
-    const content = readFileSync(statusPath, "utf-8");
-    return JSON.parse(content) as ClaudeStatus;
-  } catch {
-    return null;
-  }
-}
-
-function listClaudePanes(): ClaudePane[] {
-  try {
-    // Get all status files - these are the source of truth for Claude instances
-    const statusDir = join(homedir(), ".claude", "status");
-    if (!existsSync(statusDir)) return [];
-
-    const statusFiles = readdirSync(statusDir).filter((f) => f.endsWith(".json"));
-    const statusPaneIds = new Set(statusFiles.map((f) => f.replace(".json", "")));
-
-    // Get tmux pane info
-    const output = execSync(
-      `${TMUX} list-panes -a -F "#{pane_id}|#{session_name}|#{window_index}|#{window_name}|#{pane_index}|#{pane_current_command}|#{pane_current_path}"`,
-      { encoding: "utf-8" }
-    );
-
-    const paneMap = new Map<string, string[]>();
-    for (const line of output.trim().split("\n")) {
-      const parts = line.split("|");
-      if (parts.length >= 7) {
-        paneMap.set(parts[0], parts);
-      }
-    }
-
-    const panes: ClaudePane[] = [];
-
-    // Only include panes that have status files AND still exist in tmux
-    for (const paneId of statusPaneIds) {
-      const parts = paneMap.get(paneId);
-      if (!parts) continue; // Pane no longer exists
-
-      const status = readStatusFile(paneId);
-
-      panes.push({
-        paneId,
-        sessionName: parts[1],
-        windowIndex: parts[2],
-        windowName: parts[3],
-        paneIndex: parts[4],
-        panePath: parts[6],
-        status,
-      });
-    }
-
-    // Sort by status priority
-    panes.sort((a, b) => getStatusPriority(a.status) - getStatusPriority(b.status));
-
-    return panes;
-  } catch {
-    return [];
-  }
-}
-
-function switchToPane(pane: ClaudePane) {
-  try {
-    const target = `${pane.sessionName}:${pane.windowIndex}.${pane.paneIndex}`;
-    execSync(`${TMUX} switch-client -t "${target}"`);
-    execSync(`${TMUX} select-pane -t "${pane.paneId}"`);
+    switchToPane(pane);
     showToast({ style: Toast.Style.Success, title: "Switched to Claude instance" });
   } catch (error) {
     showToast({ style: Toast.Style.Failure, title: "Failed to switch", message: String(error) });
   }
 }
 
-function shortenPath(path: string): string {
-  const home = homedir();
-  let shortened = path.replace(home, "~");
-  const parts = shortened.split("/");
-  return parts[parts.length - 1] || shortened;
+function sendKeysToPane(paneId: string, keys: string, description: string) {
+  try {
+    execSync(`${TMUX} send-keys -t ${paneId} ${keys}`);
+    showToast({ style: Toast.Style.Success, title: `Sent ${description}` });
+  } catch (error) {
+    showToast({ style: Toast.Style.Failure, title: `Failed to send ${description}`, message: String(error) });
+  }
+}
+
+function allowAllAwaiting(panes: ClaudePane[]) {
+  try {
+    const awaitingPanes = panes.filter((pane) => pane.status?.status === "awaiting");
+
+    if (awaitingPanes.length === 0) {
+      showToast({ style: Toast.Style.Failure, title: "No awaiting instances found" });
+      return;
+    }
+
+    for (const pane of awaitingPanes) {
+      execSync(`${TMUX} send-keys -t "${pane.paneId}" a`);
+    }
+
+    showToast({
+      style: Toast.Style.Success,
+      title: `Allowed ${awaitingPanes.length} instance${awaitingPanes.length === 1 ? "" : "s"}`,
+    });
+  } catch (error) {
+    showToast({ style: Toast.Style.Failure, title: "Failed to allow instances", message: String(error) });
+  }
 }
 
 export default function Command() {
@@ -153,8 +56,17 @@ export default function Command() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Initial load
     setPanes(listClaudePanes());
     setIsLoading(false);
+
+    // Auto-refresh every 3 seconds
+    const intervalId = setInterval(() => {
+      setPanes(listClaudePanes());
+    }, 3000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   return (
@@ -176,6 +88,34 @@ export default function Command() {
             actions={
               <ActionPanel>
                 <Action title="Switch to Pane" onAction={() => switchToPane(pane)} />
+                <ActionPanel.Section title="Quick Commands">
+                  <Action
+                    title="Allow"
+                    icon={Icon.Check}
+                    onAction={() => sendKeysToPane(pane.paneId, "2", "Allow")}
+                    shortcut={{ modifiers: ["cmd", "opt", "ctrl"], key: "a" }}
+                  />
+                  <Action
+                    title="Cycle Mode"
+                    icon={Icon.CheckCircle}
+                    onAction={() => sendKeysToPane(pane.paneId, "BTab", "Cycle Mode")}
+                    shortcut={{ modifiers: ["cmd", "shift"], key: "a" }}
+                  />
+                  <Action
+                    title="Send Yes"
+                    icon={Icon.Checkmark}
+                    onAction={() => sendKeysToPane(pane.paneId, "1", "Yes")}
+                    shortcut={{ modifiers: ["cmd"], key: "y" }}
+                  />
+                </ActionPanel.Section>
+                <ActionPanel.Section>
+                  <Action
+                    title="Allow All Awaiting"
+                    onAction={() => allowAllAwaiting(panes)}
+                    icon={Icon.CheckRosette}
+                    shortcut={{ modifiers: ["cmd", "shift"], key: "r" }}
+                  />
+                </ActionPanel.Section>
               </ActionPanel>
             }
           />
