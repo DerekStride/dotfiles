@@ -13,6 +13,19 @@
       "title": "Claude Instances",
       "description": "List all Claude Code instances and their status",
       "mode": "view"
+    },
+    {
+      "name": "background",
+      "title": "Claude Status Watcher",
+      "description": "Background watcher for Claude status changes",
+      "mode": "no-view",
+      "interval": "10s"
+    },
+    {
+      "name": "menubar",
+      "title": "Claude Status Menu Bar",
+      "description": "Show Claude status in menu bar",
+      "mode": "menu-bar"
     }
   ],
   "dependencies": {
