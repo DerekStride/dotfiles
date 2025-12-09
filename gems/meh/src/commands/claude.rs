@@ -1,6 +1,9 @@
 use crate::error::{MehError, Result};
+use serde_json::{json, Value};
 use std::cmp::Ordering;
+use std::fs;
 use std::io::Write;
+use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
 /// Represents a Claude Code pane
@@ -325,4 +328,119 @@ fn switch_to_pane(pane: &ClaudePane) -> Result<()> {
     }
 
     Ok(())
+}
+
+/// Initialize Claude hooks for real-time status detection
+pub fn init() -> Result<()> {
+    let settings_path = get_claude_settings_path()?;
+
+    // Read existing settings
+    let content = fs::read_to_string(&settings_path).map_err(|e| {
+        MehError::TmuxCommand(format!("Failed to read settings.json: {}", e))
+    })?;
+
+    let mut settings: Value = serde_json::from_str(&content).map_err(|e| {
+        MehError::TmuxCommand(format!("Failed to parse settings.json: {}", e))
+    })?;
+
+    // Ensure hooks object exists
+    if settings.get("hooks").is_none() {
+        settings["hooks"] = json!({});
+    }
+
+    let hooks = settings["hooks"].as_object_mut().ok_or_else(|| {
+        MehError::TmuxCommand("hooks is not an object".into())
+    })?;
+
+    // Status file command template
+    let status_cmd = |status: &str| -> Value {
+        json!([{
+            "matcher": "",
+            "hooks": [{
+                "type": "command",
+                "command": format!(
+                    "mkdir -p ~/.claude/status && echo '{{\"status\":\"{}\",\"cwd\":\"'$(pwd)'\",\"timestamp\":'$(date +%s)'}}' > ~/.claude/status/${{TMUX_PANE}}.json",
+                    status
+                )
+            }]
+        }])
+    };
+
+    // Add/update hooks
+    hooks.insert("Stop".to_string(), status_cmd("idle"));
+    hooks.insert("UserPromptSubmit".to_string(), status_cmd("working"));
+    hooks.insert("PermissionRequest".to_string(), status_cmd("awaiting"));
+    hooks.insert("SessionEnd".to_string(), json!([{
+        "matcher": "",
+        "hooks": [{
+            "type": "command",
+            "command": "rm -f ~/.claude/status/${TMUX_PANE}.json"
+        }]
+    }]));
+
+    // Update SessionStart to also set initial status
+    if let Some(session_start) = hooks.get_mut("SessionStart") {
+        if let Some(arr) = session_start.as_array_mut() {
+            if let Some(first) = arr.first_mut() {
+                if let Some(hook_arr) = first.get_mut("hooks").and_then(|h| h.as_array_mut()) {
+                    // Check if status hook already exists
+                    let has_status = hook_arr.iter().any(|h| {
+                        h.get("command")
+                            .and_then(|c| c.as_str())
+                            .map(|s| s.contains("claude/status"))
+                            .unwrap_or(false)
+                    });
+                    if !has_status {
+                        hook_arr.push(json!({
+                            "type": "command",
+                            "command": "mkdir -p ~/.claude/status && echo '{\"status\":\"idle\",\"cwd\":\"'$(pwd)'\",\"timestamp\":'$(date +%s)'}' > ~/.claude/status/${TMUX_PANE}.json"
+                        }));
+                    }
+                }
+            }
+        }
+    }
+
+    // Write back
+    let output = serde_json::to_string_pretty(&settings).map_err(|e| {
+        MehError::TmuxCommand(format!("Failed to serialize settings: {}", e))
+    })?;
+
+    fs::write(&settings_path, output).map_err(|e| {
+        MehError::TmuxCommand(format!("Failed to write settings.json: {}", e))
+    })?;
+
+    // Create status directory
+    let home = std::env::var("HOME").unwrap_or_default();
+    let status_dir = PathBuf::from(&home).join(".claude/status");
+    fs::create_dir_all(&status_dir).ok();
+
+    println!("✓ Claude hooks configured for real-time status detection");
+    println!("  Settings: {}", settings_path.display());
+    println!("  Status dir: {}", status_dir.display());
+    println!("\nHooks added:");
+    println!("  • Stop → idle status");
+    println!("  • UserPromptSubmit → working status");
+    println!("  • PermissionRequest → awaiting status");
+    println!("  • SessionEnd → cleanup status file");
+    println!("  • SessionStart → initial idle status");
+
+    Ok(())
+}
+
+fn get_claude_settings_path() -> Result<PathBuf> {
+    let home = std::env::var("HOME").map_err(|_| {
+        MehError::TmuxCommand("HOME environment variable not set".into())
+    })?;
+
+    let path = PathBuf::from(home).join(".claude/settings.json");
+
+    if !path.exists() {
+        return Err(MehError::TmuxCommand(format!(
+            "Claude settings not found at {}",
+            path.display()
+        )));
+    }
+
+    Ok(path)
 }

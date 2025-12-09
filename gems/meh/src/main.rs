@@ -18,10 +18,19 @@ struct Cli {
 enum Commands {
     /// Move the current pane to the bg-tasks session
     Bg,
-    /// Show Claude Code instances across all tmux sessions and switch to one
-    Claude,
+    /// Claude Code instance management
+    Claude {
+        #[command(subcommand)]
+        action: Option<ClaudeAction>,
+    },
     /// Select a pane from bg-tasks and bring it to the current session
     Fg,
+}
+
+#[derive(Subcommand)]
+enum ClaudeAction {
+    /// Set up Claude hooks for real-time status detection
+    Init,
 }
 
 fn main() {
@@ -29,7 +38,10 @@ fn main() {
 
     let result = match cli.command {
         Commands::Bg => bg::run(),
-        Commands::Claude => claude::run(),
+        Commands::Claude { action } => match action {
+            Some(ClaudeAction::Init) => claude::init(),
+            None => claude::run(),
+        },
         Commands::Fg => fg::run(),
     };
 
