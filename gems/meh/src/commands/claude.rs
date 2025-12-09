@@ -317,6 +317,7 @@ pub fn init() -> Result<()> {
     // Add/update hooks
     hooks.insert("Stop".to_string(), status_cmd("idle"));
     hooks.insert("UserPromptSubmit".to_string(), status_cmd("working"));
+    hooks.insert("PostToolUse".to_string(), status_cmd("working"));
     hooks.insert("PermissionRequest".to_string(), status_cmd("awaiting"));
     hooks.insert("SessionEnd".to_string(), json!([{
         "matcher": "",
@@ -369,6 +370,7 @@ pub fn init() -> Result<()> {
     println!("\nHooks added:");
     println!("  • Stop → idle status");
     println!("  • UserPromptSubmit → working status");
+    println!("  • PostToolUse → working status (resumes after permission)");
     println!("  • PermissionRequest → awaiting status");
     println!("  • SessionEnd → cleanup status file");
     println!("  • SessionStart → initial idle status");
