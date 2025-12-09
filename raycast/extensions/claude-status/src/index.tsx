@@ -7,6 +7,7 @@ import {
   shortenPath,
   getStatusIcon,
   getStatusLabel,
+  getStatusPriority,
   TMUX,
   type ClaudePane,
 } from "./utils";
@@ -51,6 +52,20 @@ function allowAllAwaiting(panes: ClaudePane[]) {
   }
 }
 
+function sortPanes(panes: ClaudePane[]): ClaudePane[] {
+  // Sort by: Status (actionable first) -> Session Name -> Directory Name
+  return [...panes].sort((a, b) => {
+    // Status priority: awaiting (0) > working (1) > idle (2) > unknown (3)
+    const statusCmp = getStatusPriority(a.status) - getStatusPriority(b.status);
+    if (statusCmp !== 0) return statusCmp;
+
+    const sessionCmp = a.sessionName.localeCompare(b.sessionName);
+    if (sessionCmp !== 0) return sessionCmp;
+
+    return shortenPath(a.panePath).localeCompare(shortenPath(b.panePath));
+  });
+}
+
 export default function Command() {
   const [panes, setPanes] = useState<ClaudePane[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,6 +84,8 @@ export default function Command() {
     return () => clearInterval(intervalId);
   }, []);
 
+  const sortedPanes = sortPanes(panes);
+
   return (
     <List isLoading={isLoading}>
       {panes.length === 0 ? (
@@ -78,13 +95,17 @@ export default function Command() {
           description="Start Claude Code in a tmux session to see it here"
         />
       ) : (
-        panes.map((pane) => (
+        sortedPanes.map((pane) => (
           <List.Item
             key={pane.paneId}
             icon={getStatusIcon(pane.status)}
-            title={getStatusLabel(pane.status)}
-            subtitle={`${pane.sessionName}:${pane.windowName}`}
-            accessories={[{ text: shortenPath(pane.panePath) }]}
+            title={shortenPath(pane.panePath)}
+            subtitle={pane.gitBranch || pane.windowName}
+            keywords={[pane.gitBranch, pane.sessionName, pane.windowName, pane.panePath].filter(Boolean) as string[]}
+            accessories={[
+              { tag: pane.sessionName },
+              { text: getStatusLabel(pane.status) },
+            ]}
             actions={
               <ActionPanel>
                 <Action title="Switch to Pane" onAction={() => switchToPane(pane)} />

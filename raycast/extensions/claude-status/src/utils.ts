@@ -19,7 +19,21 @@ export interface ClaudePane {
   windowName: string;
   paneIndex: string;
   panePath: string;
+  gitBranch: string | null;
   status: ClaudeStatus | null;
+}
+
+export function getGitBranch(path: string): string | null {
+  try {
+    const branch = execSync("git rev-parse --abbrev-ref HEAD", {
+      cwd: path,
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+    }).trim();
+    return branch || null;
+  } catch {
+    return null;
+  }
 }
 
 export function getStatusIcon(status: ClaudeStatus | null): { source: Icon; tintColor: Color } {
@@ -109,13 +123,15 @@ export function listClaudePanes(): ClaudePane[] {
 
       const status = readStatusFile(paneId);
 
+      const panePath = parts[6];
       panes.push({
         paneId,
         sessionName: parts[1],
         windowIndex: parts[2],
         windowName: parts[3],
         paneIndex: parts[4],
-        panePath: parts[6],
+        panePath,
+        gitBranch: getGitBranch(panePath),
         status,
       });
     }
