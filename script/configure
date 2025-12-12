@@ -3,7 +3,7 @@
 # link all .symlink files.
 
 stow stow
-stow alacritty
+stow ghostty
 stow git
 stow ruby
 stow zsh

@@ -1,10 +1,5 @@
 # shortcut to this dotfiles path is $ZSH
-if [ $SPIN ]
-then
-  export ZSH=$HOME/dotfiles
-else
-  export ZSH=$HOME/.dotfiles
-fi
+export ZSH=$HOME/.dotfiles
 
 # your project folder that we can `c [tab]` to
 export PROJECTS=~/src
