@@ -15,18 +15,10 @@ declare type Preferences = ExtensionPreferences
 declare namespace Preferences {
   /** Preferences accessible in the `index` command */
   export type Index = ExtensionPreferences & {}
-  /** Preferences accessible in the `background` command */
-  export type Background = ExtensionPreferences & {}
-  /** Preferences accessible in the `menubar` command */
-  export type Menubar = ExtensionPreferences & {}
 }
 
 declare namespace Arguments {
   /** Arguments passed to the `index` command */
   export type Index = {}
-  /** Arguments passed to the `background` command */
-  export type Background = {}
-  /** Arguments passed to the `menubar` command */
-  export type Menubar = {}
 }
 
