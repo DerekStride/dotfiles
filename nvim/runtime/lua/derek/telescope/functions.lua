@@ -30,7 +30,7 @@ function M.storefront_renderer()
   builtin.find_files {
     prompt_title = "~ Storefront Renderer ~",
     shorten_path = false,
-    cwd = "$HOME/src/github.com/Shopify/storefront-renderer",
+    cwd = "$HOME/world/trees/root/src/areas/core/storefront",
 
     layout_config = {
       preview_width = 0.6,

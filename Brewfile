@@ -4,7 +4,7 @@ tap 'homebrew/bundle'
 tap 'homebrew/cask-fonts'
 
 brew 'rg'
-brew 'exa'
+brew 'eza'
 brew 'bat'
 brew 'fzf'
 brew 'gh'

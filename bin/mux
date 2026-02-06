@@ -151,6 +151,7 @@ while [ "$#" -gt 0 ]; do
     "--sfr")
         isWork || continue
         createSession sfr primary -c $STOREFRONT
+        createSession shop primary -c $STOREFRONT
         ;;
     "--dot")
         createSession main-terminal primary
