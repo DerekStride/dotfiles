@@ -11,13 +11,14 @@ $stdout.sync = $stderr.sync = true
 DOTFILES_DIR = File.expand_path("~/.dotfiles")
 MCP_CONFIG_PATH = File.join(DOTFILES_DIR, "data", "mcp.json")
 TMP_MCP_CONFIG = "/tmp/mcp.json"
-DEFAULT_MCP_SERVERS = %w[dev-mcp gt-mcp].freeze
+DEFAULT_MCP_SERVERS = %w[gt-mcp].freeze
+SKIP_PERMISSIONS_FLAG = "--allow-dangerously-skip-permissions"
 
 def level = ENV.fetch("LOG_LEVEL", Logger::WARN)
 def progname = File.basename($0)
 def logger = @logger ||= Logger.new($stderr, level:, progname: 'claude')
 def options = @options ||= { mcp: DEFAULT_MCP_SERVERS }
-def env = {}
+def env = @env ||= {}
 
 gemfile do
   source "https://rubygems.org"
@@ -108,6 +109,10 @@ parser = OptionParser.new do |o|
   o.on("-n", "--no-default", "Start without any MCP servers") do
     options[:mcp] = nil
   end
+
+  o.on("-s", "--skip", "Add #{SKIP_PERMISSIONS_FLAG}") do
+    options[:skip_permissions] = true
+  end
 end
 
 parser.parse!
@@ -144,6 +149,8 @@ def main
     # No --mcp flag passed, start without MCP servers
     logger.debug("No MCP servers requested")
   end
+
+  cmd << SKIP_PERMISSIONS_FLAG if options[:skip_permissions]
 
   # Pass through any additional arguments
   cmd.concat(ARGV)
