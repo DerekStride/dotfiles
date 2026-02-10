@@ -129,6 +129,58 @@ local function copy_filepath_to_clipboard()
   print("Copied filepath to clipboard: " .. relative_filepath)
 end
 
+local function open_in_github()
+  local filepath = vim.fn.expand("%:p")
+  if filepath == "" then
+    print("No file currently open")
+    return
+  end
+
+  -- Get git toplevel
+  local git_root = vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("%s+", "")
+  if git_root == "" then
+    print("Not in a git repository")
+    return
+  end
+
+  -- Get relative path from git root
+  local relative_path = filepath:sub(#git_root + 2)
+
+  -- Get remote URL
+  local remote_url = vim.fn.system("git remote get-url origin 2>/dev/null"):gsub("%s+", "")
+  if remote_url == "" then
+    print("No git remote 'origin' found")
+    return
+  end
+
+  -- Parse remote URL to GitHub base URL (handles SSH and HTTPS)
+  local github_url
+  local ssh_match = remote_url:match("git@github%.com:(.+)%.git$") or remote_url:match("git@github%.com:(.+)$")
+  if ssh_match then
+    github_url = "https://github.com/" .. ssh_match
+  else
+    github_url = remote_url:gsub("%.git$", "")
+  end
+
+  local url = github_url .. "/blob/main/" .. relative_path
+
+  -- Handle line numbers for visual mode
+  local mode = vim.fn.mode()
+  if mode == "v" or mode == "V" or mode == "\22" then
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'x', false)
+    local start_line = vim.fn.getpos("'<")[2]
+    local end_line = vim.fn.getpos("'>")[2]
+    if start_line == end_line then
+      url = url .. "#L" .. start_line
+    else
+      url = url .. "#L" .. start_line .. "-L" .. end_line
+    end
+  end
+
+  vim.fn.system("open " .. vim.fn.shellescape(url))
+  print("Opened in GitHub: " .. url)
+end
+
 local function open_prompt_notes()
   local scratch_dir = vim.fn.expand("$NOTES")
   if scratch_dir == "$NOTES" or scratch_dir == "" then
@@ -172,4 +224,5 @@ keymap.set("n", "<leader><leader>p", "<cmd>set number<cr>", default_opts)
 keymap.set({"n", "v"}, "<leader><leader>c", send_to_claude, default_opts)
 keymap.set({"n", "v"}, "<leader><leader>f", send_filepath_to_claude, default_opts)
 keymap.set({"n", "v"}, "<leader><leader>y", copy_filepath_to_clipboard, default_opts)
+keymap.set({"n", "v"}, "<leader><leader>g", open_in_github, default_opts)
 keymap.set("n", "<leader>np", open_prompt_notes, default_opts)
