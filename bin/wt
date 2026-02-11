@@ -29,6 +29,12 @@ getWorktreeNames() {
   getWorktreeList | xargs -I {} basename {}
 }
 
+isWorldMonorepo() {
+  local git_root
+  git_root=$(git rev-parse --show-toplevel 2>/dev/null)
+  [[ "$git_root" == "$HOME/world"* ]]
+}
+
 if [ "$1" == "help" ] || [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
   sayHelp
   exit 0
@@ -44,10 +50,35 @@ fi
 
 case "$command" in
 "new")
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    echo "Error: Not in a git repository"
+    exit 1
+  fi
+
   name=${1:-$(getCurrentTmuxWindowName)}
 
-  echo "copied to clipboard: dev cd $(basename $PWD) -t $name"
-  echo "dev cd $(basename $PWD) -t $name" | pbcopy
+  if [ -z "$name" ]; then
+    echo "Error: No worktree name provided and not in a tmux window"
+    exit 1
+  fi
+
+  if isWorldMonorepo; then
+    echo "copied to clipboard: dev cd $(basename $PWD) -t $name"
+    echo "dev cd $(basename $PWD) -t $name" | pbcopy
+    exit 0
+  fi
+
+  git_root=$(git rev-parse --show-toplevel)
+  worktree_path="${git_root}.${name}"
+
+  if git rev-parse --verify "$name" >/dev/null 2>&1; then
+    git worktree add "$worktree_path" "$name"
+  else
+    git worktree add -b "$name" "$worktree_path"
+  fi
+
+  cd "$worktree_path" || exit 1
+  exec "$SHELL"
   ;;
 
 "ls")
