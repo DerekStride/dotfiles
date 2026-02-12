@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require "bundler/inline"
 require "optparse"
 require "logger"
 
@@ -9,11 +8,6 @@ $stdout.sync = $stderr.sync = true
 def progname = File.basename($0)
 def options = @options ||= {}
 def logger = @logger ||= Logger.new($stderr, progname:, level: ENV.fetch("LOG_LEVEL", Logger::WARN))
-
-gemfile do
-  source "https://rubygems.org"
-  gem "debug"
-end
 
 WORLD_DIR = File.expand_path("~/world")
 
