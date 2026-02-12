@@ -1,159 +1,184 @@
-#!/usr/bin/env bash
+#!/usr/bin/env ruby
+# frozen_string_literal: true
 
-sayHelp() {
-  cat <<- "HELP"
-Usage: wt [command] [options]
-  commands:
-  (no command)     Switch to a worktree using fzf selection (default)
-  new [NAME]       Create a new git worktree (uses tmux window name if NAME not provided)
-  ls               List all git worktrees
-  switch           Switch to a worktree using fzf selection
-  remove | rm      Remove worktrees using fzf multi-selection
-  help | --help | -h
-HELP
-}
+require "bundler/inline"
+require "optparse"
+require "logger"
 
-getCurrentTmuxWindowName() {
-  if [ -n "$TMUX" ]; then
-    tmux display-message -p '#W'
+$stdout.sync = $stderr.sync = true
+def progname = File.basename($0)
+def options = @options ||= {}
+def logger = @logger ||= Logger.new($stderr, progname:, level: ENV.fetch("LOG_LEVEL", Logger::WARN))
+
+gemfile do
+  source "https://rubygems.org"
+  gem "debug"
+end
+
+WORLD_DIR = File.expand_path("~/world")
+
+def in_git_repo?
+  system("git", "rev-parse", "--git-dir", out: File::NULL, err: File::NULL)
+end
+
+def git_root
+  @git_root ||= `git rev-parse --show-toplevel 2>/dev/null`.chomp
+end
+
+def world_monorepo?
+  git_root.start_with?(WORLD_DIR)
+end
+
+def tmux_window_name
+  return nil unless ENV["TMUX"]
+
+  `tmux display-message -p '#W'`.chomp
+end
+
+def worktree_list
+  `git worktree list --porcelain 2>/dev/null`
+    .lines
+    .grep(/^worktree /)
+    .map { _1.sub(/^worktree /, "").chomp }
+end
+
+def require_git!
+  return if in_git_repo?
+
+  logger.error("Not in a git repository")
+  exit(1)
+end
+
+def require_fzf!
+  return if system("which", "fzf", out: File::NULL, err: File::NULL)
+
+  logger.error("fzf is required")
+  exit(1)
+end
+
+def resolve_name(arg)
+  name = arg || tmux_window_name
+  unless name && !name.empty?
+    logger.error("No worktree name provided and not in a tmux window")
+    exit(1)
+  end
+  name
+end
+
+def cmd_new(args)
+  require_git!
+  name = resolve_name(args.first)
+
+  if world_monorepo?
+    cmd = "dev cd #{File.basename(Dir.pwd)} -t #{name}"
+    IO.popen("pbcopy", "w") { _1.write(cmd) }
+    puts "copied to clipboard: #{cmd}"
+    return
+  end
+
+  worktree_path = "#{git_root}.#{name}"
+
+  if system("git", "rev-parse", "--verify", name, out: File::NULL, err: File::NULL)
+    system("git", "worktree", "add", worktree_path, name) || exit(1)
   else
-    echo ""
-  fi
-}
+    system("git", "worktree", "add", "-b", name, worktree_path) || exit(1)
+  end
 
-getWorktreeList() {
-  git worktree list --porcelain 2>/dev/null | grep "^worktree " | sed 's/^worktree //'
-}
+  Dir.chdir(worktree_path)
+  exec(ENV.fetch("SHELL", "/bin/bash"))
+end
 
-getWorktreeNames() {
-  getWorktreeList | xargs -I {} basename {}
-}
+def cmd_ls
+  exec("git", "worktree", "list")
+end
 
-isWorldMonorepo() {
-  local git_root
-  git_root=$(git rev-parse --show-toplevel 2>/dev/null)
-  [[ "$git_root" == "$HOME/world"* ]]
-}
+def cmd_switch
+  require_git!
+  require_fzf!
 
-if [ "$1" == "help" ] || [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
-  sayHelp
-  exit 0
-fi
+  current_root = git_root
+  relative_path = Dir.pwd.delete_prefix(current_root)
 
-# Default to switch command if no arguments provided
-if [ "$#" -eq 0 ]; then
-  command="switch"
+  selected = IO.popen(["fzf", "--prompt=Select worktree: ", "--height=40%", "--reverse"], "r+") do |fzf|
+    fzf.puts(worktree_list.join("\n"))
+    fzf.close_write
+    fzf.read.chomp
+  end
+
+  if selected.empty?
+    logger.error("No worktree selected")
+    exit(1)
+  end
+
+  target = "#{selected}#{relative_path}"
+  if Dir.exist?(target)
+    puts "Switching to: #{target}"
+    Dir.chdir(target)
+  else
+    puts "Directory #{relative_path} doesn't exist in target worktree, switching to worktree root: #{selected}"
+    Dir.chdir(selected)
+  end
+
+  exec(ENV.fetch("SHELL", "/bin/bash"))
+end
+
+def cmd_remove
+  require_git!
+  require_fzf!
+
+  selected = IO.popen(["fzf", "--prompt=Select worktrees to remove: ", "--multi", "--height=40%", "--reverse"], "r+") do |fzf|
+    fzf.puts(worktree_list.join("\n"))
+    fzf.close_write
+    fzf.read.split("\n").map(&:strip).reject(&:empty?)
+  end
+
+  if selected.empty?
+    logger.error("No worktrees selected")
+    exit(1)
+  end
+
+  puts "Selected worktrees for removal:"
+  selected.each { puts "  #{_1}" }
+  print "\nAre you sure you want to remove these worktrees? (y/N): "
+
+  unless $stdin.gets&.strip&.match?(/^[Yy]$/)
+    puts "Removal cancelled"
+    return
+  end
+
+  selected.each do |worktree|
+    puts "Removing worktree: #{worktree}"
+    system("git", "worktree", "remove", worktree, "--force")
+  end
+end
+
+parser = OptionParser.new do |o|
+  o.banner = "usage: #{progname} <command> [options]"
+  o.separator ""
+  o.separator "Commands:"
+  o.separator "  (no command)     Switch to a worktree using fzf selection (default)"
+  o.separator "  new [NAME]       Create a new git worktree (uses tmux window name if NAME not provided)"
+  o.separator "  ls               List all git worktrees"
+  o.separator "  switch           Switch to a worktree using fzf selection"
+  o.separator "  remove | rm      Remove worktrees using fzf multi-selection"
+  o.separator ""
+  o.separator "Options:"
+  o.on("-v", "--verbose", "Enable verbose logging") { logger.level -= 1 }
+end
+
+parser.order!
+command = ARGV.shift || "switch"
+
+logger.debug("command=#{command} args=#{ARGV}")
+
+case command
+when "new"        then cmd_new(ARGV)
+when "ls"         then cmd_ls
+when "switch"     then cmd_switch
+when "remove", "rm" then cmd_remove
+when "help"       then puts parser.help
 else
-  command=$1
-  shift
-fi
-
-case "$command" in
-"new")
-  if ! git rev-parse --git-dir >/dev/null 2>&1; then
-    echo "Error: Not in a git repository"
-    exit 1
-  fi
-
-  name=${1:-$(getCurrentTmuxWindowName)}
-
-  if [ -z "$name" ]; then
-    echo "Error: No worktree name provided and not in a tmux window"
-    exit 1
-  fi
-
-  if isWorldMonorepo; then
-    echo "copied to clipboard: dev cd $(basename $PWD) -t $name"
-    echo "dev cd $(basename $PWD) -t $name" | pbcopy
-    exit 0
-  fi
-
-  git_root=$(git rev-parse --show-toplevel)
-  worktree_path="${git_root}.${name}"
-
-  if git rev-parse --verify "$name" >/dev/null 2>&1; then
-    git worktree add "$worktree_path" "$name"
-  else
-    git worktree add -b "$name" "$worktree_path"
-  fi
-
-  cd "$worktree_path" || exit 1
-  exec "$SHELL"
-  ;;
-
-"ls")
-  git worktree list
-  ;;
-
-"switch")
-  if ! command -v fzf >/dev/null 2>&1; then
-    echo "Error: fzf is required for switch command"
-    exit 1
-  fi
-
-  # Check if we're in a git repository
-  if ! git rev-parse --git-dir >/dev/null 2>&1; then
-    echo "Error: Not in a git repository"
-    exit 1
-  fi
-
-  # Get current working directory relative to git root
-  current_git_root=$(git rev-parse --show-toplevel)
-  current_dir=$(pwd)
-  relative_path=${current_dir#$current_git_root}
-
-  selected=$(getWorktreeList | fzf --prompt="Select worktree: " --height=40% --reverse)
-
-  if [ -n "$selected" ]; then
-    target_dir="$selected$relative_path"
-
-    # Check if the equivalent directory exists in the target worktree
-    if [ -d "$target_dir" ]; then
-      echo "Switching to: $target_dir"
-      cd "$target_dir" || exit 1
-    else
-      echo "Directory $relative_path doesn't exist in target worktree, switching to worktree root: $selected"
-      cd "$selected" || exit 1
-    fi
-    exec "$SHELL"
-  else
-    echo "No worktree selected"
-    exit 1
-  fi
-  ;;
-
-"remove"|"rm")
-  if ! command -v fzf >/dev/null 2>&1; then
-    echo "Error: fzf is required for remove command"
-    exit 1
-  fi
-
-  selected=$(getWorktreeList | fzf --prompt="Select worktrees to remove: " --multi --height=40% --reverse)
-
-  if [ -n "$selected" ]; then
-    echo "Selected worktrees for removal:"
-    echo "$selected"
-    echo
-    read -p "Are you sure you want to remove these worktrees? (y/N): " -n 1 -r
-    echo
-
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-      echo "$selected" | while IFS= read -r worktree; do
-        echo "Removing worktree: $worktree"
-        git worktree remove "$worktree" --force
-      done
-    else
-      echo "Removal cancelled"
-    fi
-  else
-    echo "No worktrees selected"
-    exit 1
-  fi
-  ;;
-
-*)
-  echo "Unknown command: $command"
-  sayHelp
-  exit 1
-  ;;
-esac
+  logger.error("Unknown command: #{command}")
+  puts parser.help
+  exit(1)
+end
