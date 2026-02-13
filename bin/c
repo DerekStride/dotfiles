@@ -10,13 +10,12 @@ $stdout.sync = $stderr.sync = true
 DOTFILES_DIR = File.expand_path("~/.dotfiles")
 MCP_CONFIG_PATH = File.join(DOTFILES_DIR, "data", "mcp.json")
 TMP_MCP_CONFIG = "/tmp/mcp.json"
-DEFAULT_MCP_SERVERS = %w[gt-mcp].freeze
 SKIP_PERMISSIONS_FLAG = "--allow-dangerously-skip-permissions"
 
 def level = ENV.fetch("LOG_LEVEL", Logger::WARN)
 def progname = File.basename($0)
 def logger = @logger ||= Logger.new($stderr, level:, progname: 'claude')
-def options = @options ||= { mcp: DEFAULT_MCP_SERVERS }
+def options = @options ||= {}
 def env = @env ||= {}
 
 def load_mcp_config
@@ -90,11 +89,9 @@ parser = OptionParser.new do |o|
 
   o.on("-v", "--verbose", "Enable verbose logging") { logger.level -= 1 }
 
-  o.on("-m", "--mcp [SERVERS]", Array, "MCP servers to enable (comma-separated, omit for fzf, 'default' for dev-mcp,gt-mcp)") do |servers|
+  o.on("-m", "--mcp [SERVERS]", Array, "MCP servers to enable (comma-separated, omit for fzf)") do |servers|
     options[:mcp] = if servers.nil?
       :fzf
-    elsif servers == %w[default]
-      DEFAULT_MCP_SERVERS
     else
       servers
     end
@@ -120,7 +117,6 @@ def main
     "claude",
     "--",
     "--strict-mcp-config",
-    "--allow-dangerously-skip-permissions",
   ]
 
   # Handle MCP server selection
