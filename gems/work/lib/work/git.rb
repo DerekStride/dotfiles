@@ -37,6 +37,15 @@ module Work
       worktree_path
     end
 
+    def remove_worktree(name)
+      worktree_path = "#{git_root}.#{name}"
+      system("git", "worktree", "remove", worktree_path) || raise(Error, "Failed to remove worktree '#{worktree_path}'")
+    end
+
+    def delete_branch(name)
+      system("git", "branch", "-d", name) || raise(Error, "Failed to delete branch '#{name}'")
+    end
+
     def tmux_window_name
       return nil unless ENV["TMUX"]
 

@@ -26,6 +26,10 @@ module Work
       system("tmux", "split-window", "-v", "-t", "#{prefix}1", "-l", "50%", "-d")
     end
 
+    def kill_window(name)
+      system("tmux", "kill-window", "-t", name, out: File::NULL, err: File::NULL)
+    end
+
     def window_exists?(name)
       `tmux list-windows -F '\#{window_name}' 2>/dev/null`.lines.any? { _1.chomp == name }
     end

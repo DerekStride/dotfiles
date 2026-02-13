@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "new_command"
+require_relative "rm_command"
 require_relative "split_command"
 
 module Work
@@ -16,6 +17,7 @@ module Work
       )
 
       register_subcommand NewCommand, category: :core
+      register_subcommand RmCommand, category: :core
       register_subcommand SplitCommand, category: :core
 
       def define_flags(parser, options)
