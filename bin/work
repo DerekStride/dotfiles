@@ -1,0 +1,99 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/inline"
+
+gemfile(true, quiet: true) do
+  source "https://rubygems.org"
+  gem "work", path: File.expand_path("../gems/work", __dir__)
+end
+
+require "optparse"
+require "logger"
+require "work"
+
+$stdout.sync = $stderr.sync = true
+def progname = File.basename($0)
+def logger = @logger ||= Logger.new($stderr, progname:, level: ENV.fetch("LOG_LEVEL", Logger::WARN))
+
+def resolve_name(arg)
+  name = arg || Work::Git.tmux_window_name
+  unless name && !name.empty?
+    logger.error("No name provided and not in a tmux window")
+    exit(1)
+  end
+  name
+end
+
+def setup_command(dir)
+  if File.exist?("/opt/dev/bin/dev")
+    "dev up"
+  elsif File.exist?(File.join(dir, "Gemfile"))
+    "bundle install"
+  end
+end
+
+def cmd_new(args)
+  unless Work::Git.in_git_repo?
+    logger.error("Not in a git repository")
+    exit(1)
+  end
+
+  name = resolve_name(args.first)
+
+  if Work::Tmux.window_exists?(name)
+    logger.error("Window '#{name}' already exists")
+    exit(1)
+  end
+
+  if Work::Git.world_monorepo?
+    project = File.basename(Dir.pwd)
+    Work::Tmux.create_window(name, dir: Dir.pwd)
+    chain = "dev cd #{project} -t #{name} && work split"
+    Work::Tmux.send_keys(name, chain)
+    Work::Tmux.select_window(name)
+    logger.info("Created world workspace '#{name}' for #{project}")
+  else
+    worktree_path = Work::Git.create_worktree(name)
+    Work::Tmux.create_window(name, dir: worktree_path)
+
+    setup = setup_command(worktree_path)
+    chain = [setup, "work split"].compact.join(" && ")
+    Work::Tmux.send_keys(name, chain)
+    Work::Tmux.select_window(name)
+    logger.info("Created workspace '#{name}' at #{worktree_path}")
+  end
+end
+
+def cmd_split
+  Work::Tmux.split_panes
+end
+
+parser = OptionParser.new do |o|
+  o.banner = "usage: #{progname} <command> [options]"
+  o.separator ""
+  o.separator "Commands:"
+  o.separator "  new [NAME]       Create worktree + tmux window + setup + split"
+  o.separator "  split            Split current window into 3 panes"
+  o.separator ""
+  o.separator "Options:"
+  o.on("-v", "--verbose", "Enable verbose logging") { logger.level -= 1 }
+end
+
+parser.order!
+command = ARGV.shift
+
+logger.debug("command=#{command} args=#{ARGV}")
+
+case command
+when "new"   then cmd_new(ARGV)
+when "split" then cmd_split
+when "help"  then puts parser.help
+when nil
+  puts parser.help
+  exit(1)
+else
+  logger.error("Unknown command: #{command}")
+  puts parser.help
+  exit(1)
+end
