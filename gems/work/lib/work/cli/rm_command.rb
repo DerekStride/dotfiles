@@ -4,11 +4,13 @@ module Work
   module CLI
     class RmCommand < Base
       command_name "rm"
+      aliases "remove"
       summary "Remove worktree + tmux window + branch"
       description "Delete a workspace: kills the tmux window, removes the git worktree, and deletes the branch"
-      @arguments = [["NAME", "Branch/worktree name to remove"]]
+      @arguments = [["NAME", "Branch/worktree name (opens fzf if omitted)"]]
       examples(
-        "work rm my-feature"
+        "work rm my-feature",
+        "work rm                   # opens fzf to select"
       )
 
       def validate
@@ -19,18 +21,16 @@ module Work
       end
 
       def execute
-        name = argv.shift
-        unless name
-          logger.error("Branch name is required")
-          return 1
+        names = argv.empty? ? Work::Workspace.select(multi: true) : argv
+        return 0 if names.empty?
+
+        errors = 0
+        names.each do |name|
+          puts "Removing #{name}..."
+          errors += Work::Workspace.remove(name)
         end
 
-        Work::Tmux.kill_window(name)
-        Work::Git.remove_worktree(name)
-        Work::Git.delete_branch(name)
-
-        logger.info("Removed workspace '#{name}'")
-        0
+        errors > 0 ? 1 : 0
       end
     end
   end

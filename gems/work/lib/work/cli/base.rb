@@ -21,6 +21,11 @@ module Work
           @description || @summary
         end
 
+        def aliases(*names)
+          @aliases = names if names.any?
+          @aliases || []
+        end
+
         def examples(*lines)
           @examples = lines if lines.any?
           @examples || []
@@ -110,7 +115,7 @@ module Work
       def find_subcommand
         entries = self.class.registered_subcommands
         @argv.each_with_index do |arg, i|
-          entry = entries.find { |s| s[:klass].command_name == arg }
+          entry = entries.find { |s| s[:klass].command_name == arg || s[:klass].aliases.include?(arg) }
           if entry
             @argv.delete_at(i)
             return entry[:klass]

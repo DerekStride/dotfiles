@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "open3"
+
 module Work
   module Git
     WORLD_DIR = File.expand_path("~/world")
@@ -37,13 +39,31 @@ module Work
       worktree_path
     end
 
+    def worktree_branches
+      `git worktree list --porcelain 2>/dev/null`
+        .split("\n\n")
+        .filter_map do |block|
+          lines = block.lines.map(&:chomp)
+          path = lines.find { _1.start_with?("worktree ") }&.sub("worktree ", "")
+          branch = lines.find { _1.start_with?("branch ") }&.sub("branch refs/heads/", "")
+          next if path == git_root
+          branch
+        end
+    end
+
     def remove_worktree(name)
       worktree_path = "#{git_root}.#{name}"
-      system("git", "worktree", "remove", worktree_path) || raise(Error, "Failed to remove worktree '#{worktree_path}'")
+      _out, err, status = Open3.capture3("git", "worktree", "remove", worktree_path)
+      return if status.success?
+      raise Error, err.chomp.empty? ? "Failed to remove worktree '#{worktree_path}'" : err.chomp
     end
 
     def delete_branch(name)
-      system("git", "branch", "-d", name) || raise(Error, "Failed to delete branch '#{name}'")
+      out, err, status = Open3.capture3("git", "branch", "-d", name)
+      unless status.success?
+        raise Error, err.chomp.empty? ? "Failed to delete branch '#{name}'" : err.chomp
+      end
+      out.chomp
     end
 
     def tmux_window_name

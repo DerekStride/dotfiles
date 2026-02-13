@@ -59,7 +59,8 @@ module Work
       def format_command_group(heading, entries)
         lines = entries.map do |entry|
           klass = entry[:klass]
-          "  %-14s %s" % [klass.command_name, klass.summary]
+          names = [klass.command_name, *klass.aliases].join(", ")
+          "  %-14s %s" % [names, klass.summary]
         end
         "#{heading}\n#{lines.join("\n")}"
       end
