@@ -49,24 +49,27 @@ def cmd_new(args)
   if Work::Git.world_monorepo?
     project = File.basename(Dir.pwd)
     Work::Tmux.create_window(name, dir: Dir.pwd)
-    chain = "dev cd #{project} -t #{name} && work split"
+    chain = "dev cd #{project} -t #{name} && work split -t #{name}"
     Work::Tmux.send_keys(name, chain)
-    Work::Tmux.select_window(name)
     logger.info("Created world workspace '#{name}' for #{project}")
   else
     worktree_path = Work::Git.create_worktree(name)
     Work::Tmux.create_window(name, dir: worktree_path)
 
     setup = setup_command(worktree_path)
-    chain = [setup, "work split"].compact.join(" && ")
+    chain = [setup, "work split -t #{name}"].compact.join(" && ")
     Work::Tmux.send_keys(name, chain)
-    Work::Tmux.select_window(name)
     logger.info("Created workspace '#{name}' at #{worktree_path}")
   end
 end
 
-def cmd_split
-  Work::Tmux.split_panes
+def cmd_split(args)
+  split_opts = {}
+  OptionParser.new do |o|
+    o.on("-t", "--target NAME", "Target window name") { |t| split_opts[:target] = t }
+  end.order!(args)
+
+  Work::Tmux.split_panes(**split_opts)
 end
 
 parser = OptionParser.new do |o|
@@ -74,7 +77,7 @@ parser = OptionParser.new do |o|
   o.separator ""
   o.separator "Commands:"
   o.separator "  new [NAME]       Create worktree + tmux window + setup + split"
-  o.separator "  split            Split current window into 3 panes"
+  o.separator "  split [-t NAME]  Split window into 3 panes (defaults to current)"
   o.separator ""
   o.separator "Options:"
   o.on("-v", "--verbose", "Enable verbose logging") { logger.level -= 1 }
@@ -87,7 +90,7 @@ logger.debug("command=#{command} args=#{ARGV}")
 
 case command
 when "new"   then cmd_new(ARGV)
-when "split" then cmd_split
+when "split" then cmd_split(ARGV)
 when "help"  then puts parser.help
 when nil
   puts parser.help
