@@ -13,7 +13,10 @@ module Work
     end
 
     def git_root
-      @git_root ||= `git rev-parse --show-toplevel 2>/dev/null`.chomp
+      @git_root ||= begin
+        git_common_dir = `git rev-parse --git-common-dir 2>/dev/null`.chomp
+        File.dirname(File.expand_path(git_common_dir))
+      end
     end
 
     def world_monorepo?
