@@ -23,7 +23,6 @@ module Work
     def split_panes(target: nil)
       prefix = target ? "#{target}." : ""
       system("tmux", "split-window", "-h", "-t", "#{prefix}0", "-l", "50%", "-d")
-      system("tmux", "split-window", "-v", "-t", "#{prefix}1", "-l", "50%", "-d")
     end
 
     def kill_window(name)

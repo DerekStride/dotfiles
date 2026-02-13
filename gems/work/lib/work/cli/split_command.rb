@@ -4,8 +4,8 @@ module Work
   module CLI
     class SplitCommand < Base
       command_name "split"
-      summary "Split window into 3 panes"
-      description "Split a tmux window into 3 panes (left half, right top, right bottom)"
+      summary "Split window into 2 panes"
+      description "Split a tmux window into 2 vertical panes (left and right)"
       examples(
         "work split",
         "work split -t my-feature"
