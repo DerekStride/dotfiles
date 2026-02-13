@@ -72,31 +72,94 @@ def cmd_split(args)
   Work::Tmux.split_panes(**split_opts)
 end
 
+HELP = <<~HELP
+  Unified workspace tool for tmux + git worktrees
+
+  USAGE
+    #{File.basename($0)} <command> [flags]
+
+  CORE COMMANDS
+    new [NAME]     Create worktree + tmux window + setup + split
+    split          Split window into 3 panes
+
+  FLAGS
+    -v, --verbose  Enable verbose output
+
+  EXAMPLES
+    $ work new my-feature
+    $ work split
+    $ work split -t my-feature
+
+  LEARN MORE
+    Use 'work <command> --help' for more information about a command.
+HELP
+
+NEW_HELP = <<~HELP
+  Create a git worktree, tmux window, run setup, and split panes
+
+  USAGE
+    #{File.basename($0)} new [NAME] [flags]
+
+  ARGUMENTS
+    NAME           Branch/worktree name (defaults to current tmux window name)
+
+  EXAMPLES
+    $ work new my-feature
+    $ work new                  # uses current tmux window name
+
+  LEARN MORE
+    Use 'work new --help' for more information.
+HELP
+
+SPLIT_HELP = <<~HELP
+  Split a tmux window into 3 panes (left half, right top, right bottom)
+
+  USAGE
+    #{File.basename($0)} split [flags]
+
+  FLAGS
+    -t, --target NAME  Target window name (defaults to current window)
+
+  EXAMPLES
+    $ work split
+    $ work split -t my-feature
+
+  LEARN MORE
+    Use 'work split --help' for more information.
+HELP
+
+help_requested = false
+
 parser = OptionParser.new do |o|
-  o.banner = "usage: #{progname} <command> [options]"
-  o.separator ""
-  o.separator "Commands:"
-  o.separator "  new [NAME]       Create worktree + tmux window + setup + split"
-  o.separator "  split [-t NAME]  Split window into 3 panes (defaults to current)"
-  o.separator ""
-  o.separator "Options:"
   o.on("-v", "--verbose", "Enable verbose logging") { logger.level -= 1 }
+  o.on("-h", "--help", "Show help for command") { help_requested = true }
 end
 
 parser.order!
 command = ARGV.shift
+
+help_requested ||= ARGV.delete("-h") || ARGV.delete("--help")
+
+if help_requested
+  case command
+  when "new"   then puts NEW_HELP
+  when "split" then puts SPLIT_HELP
+  else puts HELP
+  end
+  exit(0)
+end
 
 logger.debug("command=#{command} args=#{ARGV}")
 
 case command
 when "new"   then cmd_new(ARGV)
 when "split" then cmd_split(ARGV)
-when "help"  then puts parser.help
+when "help"  then puts HELP
 when nil
-  puts parser.help
+  puts HELP
   exit(1)
 else
   logger.error("Unknown command: #{command}")
-  puts parser.help
+  puts HELP
   exit(1)
 end
