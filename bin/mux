@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Create a plain tmux window by name.
+# Usage: mux <name>
+
+name="$1"
+if [ "$1" = "new" ]; then
+  name="$2"
+fi
+
+if [ -z "$name" ]; then
+  echo "Usage: mux <name>" >&2
+  exit 1
+fi
+
+exec work new -W "$name"

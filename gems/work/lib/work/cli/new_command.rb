@@ -4,23 +4,23 @@ module Work
   module CLI
     class NewCommand < Base
       command_name "new"
-      summary "Create a new tmux window"
-      description "Create a new tmux window, optionally with a git worktree, setup, and split"
+      summary "Create worktree + tmux window + setup + split"
+      description "Create a git worktree, tmux window, run setup, and split panes. Use -W for a plain tmux window."
       @arguments = [["NAME", "Window/branch name (opens fzf if omitted)"]]
       examples(
         "work new my-feature",
-        "work new -w my-feature    # with worktree + setup + split",
-        "work new                  # opens fzf to select branch"
+        "work new                  # opens fzf to select branch",
+        "work new -W my-feature    # plain tmux window, no worktree"
       )
 
       def define_flags(parser, options)
-        parser.on("-w", "--worktree", "Create git worktree + setup + split") { options[:worktree] = true }
+        parser.on("-W", "--no-worktree", "Just create a tmux window (skip worktree/setup/split)") { options[:no_worktree] = true }
         super
       end
 
       def validate
-        if options[:worktree] && !Work::Git.in_git_repo?
-          logger.error("Not in a git repository (required for --worktree)")
+        if !options[:no_worktree] && !Work::Git.in_git_repo?
+          logger.error("Not in a git repository (use -W for a plain window)")
           exit(1)
         end
       end
@@ -29,10 +29,10 @@ module Work
         name = argv.shift || select_branch
         return 0 unless name
 
-        if options[:worktree]
-          worktree_workspace(name)
-        else
+        if options[:no_worktree]
           plain_window(name)
+        else
+          worktree_workspace(name)
         end
       end
 

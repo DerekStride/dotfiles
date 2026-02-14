@@ -13,7 +13,7 @@ module Work
       description "Unified workspace tool for tmux + git worktrees"
       examples(
         "work new my-feature",
-        "work new -w my-feature",
+        "work new -W my-feature    # plain window, no worktree",
         "work merge my-feature",
         "work rm my-feature"
       )
