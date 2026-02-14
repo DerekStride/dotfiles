@@ -91,10 +91,9 @@ module Work
           return 0
         end
 
-        # Worktree exists, no window → create window + split
+        # Worktree exists, no window → create window
         if worktree_path
           Work::Tmux.create_window(name, dir: worktree_path)
-          Work::Tmux.send_keys(name, "work split -t #{name}")
           return 0
         end
 
