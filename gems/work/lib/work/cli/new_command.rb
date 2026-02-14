@@ -4,65 +4,116 @@ module Work
   module CLI
     class NewCommand < Base
       command_name "new"
-      summary "Create worktree + tmux window + setup + split"
-      description "Create a git worktree, tmux window, run setup, and split panes"
-      @arguments = [["NAME", "Branch/worktree name (defaults to current tmux window name)"]]
+      summary "Create a new tmux window"
+      description "Create a new tmux window, optionally with a git worktree, setup, and split"
+      @arguments = [["NAME", "Window/branch name (opens fzf if omitted)"]]
       examples(
         "work new my-feature",
-        "work new                  # uses current tmux window name"
+        "work new -w my-feature    # with worktree + setup + split",
+        "work new                  # opens fzf to select branch"
       )
 
+      def define_flags(parser, options)
+        parser.on("-w", "--worktree", "Create git worktree + setup + split") { options[:worktree] = true }
+        super
+      end
+
       def validate
-        unless Work::Git.in_git_repo?
-          logger.error("Not in a git repository")
+        if options[:worktree] && !Work::Git.in_git_repo?
+          logger.error("Not in a git repository (required for --worktree)")
           exit(1)
         end
       end
 
       def execute
-        name = resolve_name(argv.first)
+        name = argv.shift || select_branch
+        return 0 unless name
 
-        if Work::Tmux.window_exists?(name)
-          logger.error("Window '#{name}' already exists")
-          return 1
-        end
-
-        if Work::Git.world_monorepo?
-          create_world_workspace(name)
+        if options[:worktree]
+          worktree_workspace(name)
         else
-          create_worktree_workspace(name)
+          plain_window(name)
         end
-
-        0
       end
 
       private
 
-      def resolve_name(arg)
-        name = arg || Work::Git.tmux_window_name
-        unless name && !name.empty?
-          logger.error("No name provided and not in a tmux window")
-          exit(1)
+      def select_branch
+        unless Work::Git.in_git_repo?
+          logger.error("Provide a name or run from a git repo")
+          return nil
         end
-        name
+
+        branches = Work::Git.local_branches
+        if branches.empty?
+          logger.error("No branches found")
+          return nil
+        end
+
+        output = IO.popen(["fzf"], "r+") do |fzf|
+          fzf.write(branches.join("\n"))
+          fzf.close_write
+          fzf.read
+        end
+
+        return nil unless $?.success?
+        result = output.chomp
+        result.empty? ? nil : result
       end
 
-      def create_world_workspace(name)
+      def plain_window(name)
+        if Work::Tmux.window_exists?(name)
+          Work::Tmux.select_window(name)
+        else
+          Work::Tmux.create_window(name, dir: Dir.pwd, detached: false)
+        end
+        0
+      end
+
+      def worktree_workspace(name)
+        if Work::Git.world_monorepo?
+          return world_workspace(name)
+        end
+
+        worktree_path = existing_worktree_path(name)
+
+        # Worktree + window exist → switch
+        if worktree_path && Work::Tmux.window_exists?(name)
+          Work::Tmux.select_window(name)
+          return 0
+        end
+
+        # Worktree exists, no window → create window + split
+        if worktree_path
+          Work::Tmux.create_window(name, dir: worktree_path)
+          Work::Tmux.send_keys(name, "work split -t #{name}")
+          return 0
+        end
+
+        # No worktree → create everything
+        path = Work::Git.create_worktree(name)
+        Work::Tmux.create_window(name, dir: path)
+        chain = [setup_command(path), "work split -t #{name}"].compact.join(" && ")
+        Work::Tmux.send_keys(name, chain)
+        0
+      end
+
+      def existing_worktree_path(name)
+        path = "#{Work::Git.git_root}.#{name}"
+        Dir.exist?(path) ? path : nil
+      end
+
+      def world_workspace(name)
+        if Work::Tmux.window_exists?(name)
+          Work::Tmux.select_window(name)
+          return 0
+        end
+
         project = File.basename(Dir.pwd)
         Work::Tmux.create_window(name, dir: Dir.pwd)
         chain = "dev cd #{project} -t #{name} && work split -t #{name}"
         Work::Tmux.send_keys(name, chain)
-        logger.info("Created world workspace '#{name}' for #{project}")
-      end
-
-      def create_worktree_workspace(name)
-        worktree_path = Work::Git.create_worktree(name)
-        Work::Tmux.create_window(name, dir: worktree_path)
-
-        setup = setup_command(worktree_path)
-        chain = [setup, "work split -t #{name}"].compact.join(" && ")
-        Work::Tmux.send_keys(name, chain)
-        logger.info("Created workspace '#{name}' at #{worktree_path}")
+        0
       end
 
       def setup_command(dir)

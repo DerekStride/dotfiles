@@ -69,6 +69,13 @@ module Work
       out.chomp
     end
 
+    def local_branches
+      `git for-each-ref --sort=-committerdate --format='%(refname:short)' refs/heads/ 2>/dev/null`
+        .lines
+        .map(&:chomp)
+        .reject(&:empty?)
+    end
+
     def tmux_window_name
       return nil unless ENV["TMUX"]
 
