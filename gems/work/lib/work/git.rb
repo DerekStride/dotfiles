@@ -54,8 +54,24 @@ module Work
         end
     end
 
+    def worktree_path_for(branch)
+      `git worktree list --porcelain 2>/dev/null`
+        .split("\n\n")
+        .each do |block|
+          lines = block.lines.map(&:chomp)
+          path = lines.find { _1.start_with?("worktree ") }&.sub("worktree ", "")
+          wt_branch = lines.find { _1.start_with?("branch ") }&.sub("branch refs/heads/", "")
+          return path if wt_branch == branch
+        end
+      nil
+    end
+
+    def branch_exists?(name)
+      system("git", "rev-parse", "--verify", "refs/heads/#{name}", out: File::NULL, err: File::NULL)
+    end
+
     def remove_worktree(name)
-      worktree_path = "#{git_root}.#{name}"
+      worktree_path = worktree_path_for(name) || "#{git_root}.#{name}"
       _out, err, status = Open3.capture3("git", "worktree", "remove", worktree_path)
       return if status.success?
       raise Error, err.chomp.empty? ? "Failed to remove worktree '#{worktree_path}'" : err.chomp

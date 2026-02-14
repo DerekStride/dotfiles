@@ -64,7 +64,15 @@ module Work
       def plain_window(name)
         if Work::Tmux.window_exists?(name)
           Work::Tmux.select_window(name)
+          return 0
+        end
+
+        worktree_path = Work::Git.in_git_repo? && Work::Git.worktree_path_for(name)
+
+        if worktree_path
+          Work::Tmux.create_window(name, dir: worktree_path, detached: false)
         else
+          logger.warn("Branch '#{name}' exists but has no worktree") if Work::Git.in_git_repo? && Work::Git.branch_exists?(name)
           Work::Tmux.create_window(name, dir: Dir.pwd, detached: false)
         end
         0
@@ -75,7 +83,7 @@ module Work
           return world_workspace(name)
         end
 
-        worktree_path = existing_worktree_path(name)
+        worktree_path = Work::Git.worktree_path_for(name)
 
         # Worktree + window exist → switch
         if worktree_path && Work::Tmux.window_exists?(name)
@@ -96,11 +104,6 @@ module Work
         chain = [setup_command(path), "work split -t #{name}"].compact.join(" && ")
         Work::Tmux.send_keys(name, chain)
         0
-      end
-
-      def existing_worktree_path(name)
-        path = "#{Work::Git.git_root}.#{name}"
-        Dir.exist?(path) ? path : nil
       end
 
       def world_workspace(name)
