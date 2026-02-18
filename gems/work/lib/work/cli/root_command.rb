@@ -4,6 +4,7 @@ require_relative "merge_command"
 require_relative "new_command"
 require_relative "rm_command"
 require_relative "split_command"
+require_relative "switch_command"
 
 module Work
   module CLI
@@ -13,12 +14,13 @@ module Work
       description "Unified workspace tool for tmux + git worktrees"
       examples(
         "work new my-feature",
-        "work new -W my-feature    # plain window, no worktree",
+        "work switch",
         "work merge my-feature",
         "work rm my-feature"
       )
 
       register_subcommand NewCommand, category: :core
+      register_subcommand SwitchCommand, category: :core
       register_subcommand MergeCommand, category: :core
       register_subcommand RmCommand, category: :core
       register_subcommand SplitCommand, category: :core
