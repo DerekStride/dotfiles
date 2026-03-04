@@ -10,12 +10,14 @@ $stdout.sync = $stderr.sync = true
 DOTFILES_DIR = File.expand_path("~/.dotfiles")
 MCP_CONFIG_PATH = File.join(DOTFILES_DIR, "data", "mcp.json")
 TMP_MCP_CONFIG = "/tmp/mcp.json"
+DEFAULT_MCP_SERVERS = %w[gt-mcp].freeze
 SKIP_PERMISSIONS_FLAG = "--allow-dangerously-skip-permissions"
+DEVX = "/opt/dev/bin/devx"
 
 def level = ENV.fetch("LOG_LEVEL", Logger::WARN)
 def progname = File.basename($0)
 def logger = @logger ||= Logger.new($stderr, level:, progname: 'claude')
-def options = @options ||= {}
+def options = @options ||= { mcp: DEFAULT_MCP_SERVERS, agent: :pi }
 def env = @env ||= {}
 
 def load_mcp_config
@@ -89,9 +91,11 @@ parser = OptionParser.new do |o|
 
   o.on("-v", "--verbose", "Enable verbose logging") { logger.level -= 1 }
 
-  o.on("-m", "--mcp [SERVERS]", Array, "MCP servers to enable (comma-separated, omit for fzf)") do |servers|
+  o.on("-m", "--mcp [SERVERS]", Array, "MCP servers to enable (comma-separated, omit for fzf, 'default' for dev-mcp,gt-mcp)") do |servers|
     options[:mcp] = if servers.nil?
       :fzf
+    elsif servers == %w[default]
+      DEFAULT_MCP_SERVERS
     else
       servers
     end
@@ -104,6 +108,18 @@ parser = OptionParser.new do |o|
   o.on("-s", "--skip", "Add #{SKIP_PERMISSIONS_FLAG}") do
     options[:skip_permissions] = true
   end
+
+  o.on("-a", "--agent NAME", "Agent to use (pi, claude)") do |name|
+    options[:agent] = name.to_sym
+  end
+
+  o.on("--pi", "Use pi agent") do
+    options[:agent] = :pi
+  end
+
+  o.on("--claude", "Use claude agent") do
+    options[:agent] = :claude
+  end
 end
 
 parser.parse!
@@ -111,46 +127,57 @@ parser.parse!
 logger.debug("options=#{options}")
 logger.debug("remaining args=#{ARGV}")
 
-def main
-  cmd = [
-    "/opt/dev/bin/devx",
-    "claude",
-    "--",
-    "--strict-mcp-config",
-  ]
-
-  # Handle MCP server selection
-  case options[:mcp]
-  when :fzf
-    servers = select_servers_with_fzf
-    if servers.empty?
-      logger.info("No servers selected, starting without MCP")
-    else
-      config_path = write_mcp_config(servers)
-      cmd << "--mcp-config" << config_path
-      logger.info("Enabling MCP servers: #{servers.join(', ')}")
-    end
-  when Array
-    if options[:mcp].any?
-      config_path = write_mcp_config(options[:mcp])
-      cmd << "--mcp-config" << config_path
-      logger.info("Enabling MCP servers: #{options[:mcp].join(', ')}")
-    end
-  when nil
-    # No --mcp flag passed, start without MCP servers
-    logger.debug("No MCP servers requested")
-  end
-
-  cmd << SKIP_PERMISSIONS_FLAG if options[:skip_permissions]
-
-  # Pass through any additional arguments
+def agent(agent)
+  cmd = [DEVX, agent]
+  yield cmd if block_given?
   cmd.concat(ARGV)
-
-  # Log environment variables if in debug mode
   logger.debug("Executing: #{cmd.join(' ')}")
-
-  # Execute with modified environment
   exec(env, *cmd)
+end
+
+def claude
+  agent("claude") do |cmd|
+    cmd << "--strict-mcp-config"
+    # Handle MCP server selection
+    case options[:mcp]
+    when :fzf
+      servers = select_servers_with_fzf
+      if servers.empty?
+        logger.info("No servers selected, starting without MCP")
+      else
+        config_path = write_mcp_config(servers)
+        cmd << "--mcp-config" << config_path
+        logger.info("Enabling MCP servers: #{servers.join(', ')}")
+      end
+    when Array
+      if options[:mcp].any?
+        config_path = write_mcp_config(options[:mcp])
+        cmd << "--mcp-config" << config_path
+        logger.info("Enabling MCP servers: #{options[:mcp].join(', ')}")
+      end
+    when nil
+      # No --mcp flag passed, start without MCP servers
+      logger.debug("No MCP servers requested")
+    end
+
+    cmd << SKIP_PERMISSIONS_FLAG if options[:skip_permissions]
+  end
+end
+
+def pi
+  agent("pi")
+end
+
+def main
+  case options[:agent]
+  when :pi
+    pi
+  when :claude
+    claude
+  else
+    logger.error("Unknown agent #{options[:agent]}")
+    exit(4)
+  end
 end
 
 main
