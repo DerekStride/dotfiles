@@ -1,43 +1,149 @@
 #!/usr/bin/env bash
-# Create plain tmux windows and session profiles.
-#
-# Usage:
-#   mux <name>          Create a plain tmux window
-#   mux new <name>      Same as above
-#   mux --dot           Bootstrap dotfiles session
-#   mux --sfr           Bootstrap storefront sessions
-#   mux --dot --sfr     Both profiles
+# Thanks to ThePrimeagen, source:
+# https://github.com/awesome-streamers/awesome-streamerrc/blob/33ff4dfbb624d01dae36891b9a57334dbf0426b2/ThePrimeagen/tmux
 
-profile=false
+SHOPIFY_ROOT="~/world"
+STOREFRONT="$SHOPIFY_ROOT/trees/root/src/areas/core/storefront"
 
-for arg in "$@"; do
-  case "$arg" in
-    --dot)
-      profile=true
-      tmux has-session -t main-terminal 2>/dev/null || tmux new-session -d -s main-terminal -n primary
-      tmux has-window -t main-terminal:dot 2>/dev/null || tmux new-window -t main-terminal: -n dot -c "$ZSH" -d
-      [ -n "$NOTES" ] && { tmux has-window -t main-terminal:notes 2>/dev/null || tmux new-window -t main-terminal: -n notes -c "$NOTES" -d; }
-      tmux has-window -t main-terminal:site 2>/dev/null || tmux new-window -t main-terminal: -n site -c "$PROJECTS/github.com/derekstride/derekstride.github.io" -d
-      ;;
-    --sfr)
-      profile=true
-      storefront="$HOME/world/trees/root/src/areas/core/storefront"
-      tmux has-session -t sfr 2>/dev/null || tmux new-session -d -s sfr -n primary -c "$storefront"
-      tmux has-session -t shop 2>/dev/null || tmux new-session -d -s shop -n primary -c "$storefront"
-      ;;
-  esac
-done
+DEREK_ROOT="~/src/github.com/derekstride"
 
-$profile && exit 0
+createWindow() {
+    session=$1
+    window=$2
+    shift
+    shift
+    hasWindow=$(tmux list-windows -t $session | grep "$window")
 
-name="$1"
-if [ "$1" = "new" ]; then
-  name="$2"
+    if [ -z "$hasWindow" ]; then
+        cmd="tmux neww -t $session: -n $window -d"
+        if [ $# -gt 0 ]; then
+            cmd="$cmd $@"
+        fi
+        echo "Creating Window(\"$hasWindow\"): $cmd"
+        eval $cmd
+    fi
+}
+
+createSession() {
+    session=$1
+    window=$2
+    shift
+    shift
+    hasSession=$(tmux ls -F "#{session_name}" 2> /dev/null | grep "$session")
+
+    if [ -z "$hasSession" ]; then
+      cmd="tmux new -s $session -d -n $window $@ > /dev/null 2>&1"
+
+      echo "Creating Session: $cmd"
+      eval $cmd
+    fi
+}
+
+isWork() {
+  if [ -z "$WORK" ]; then
+    echo "\$WORK env var not set."
+    return 1
+  fi
+  return 0
+}
+
+sayHelp() {
+  cat <<- "HELP"
+Usage: mux [options]
+  options:
+  new [WINDOW_NAME]    Create a new tmux window (optionally with specified name)
+  split                Split window into 3 panes (left half, right top, right bottom)
+  help | --help | -h
+
+  # Project specific
+  --dot
+
+  # Work specific
+  --sfr
+HELP
+}
+
+createSession bg-tasks primary -c "~/src"
+
+if [ "$1" == "new" ]; then
+  shift
+  windowName=${1:-""}
+
+  if [ -n "$windowName" ]; then
+    tmux new-window -n "$windowName" -d
+    exit $?
+  fi
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "Error: fzf is required for branch selection" >&2
+    exit 1
+  fi
+
+  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "Error: Not inside a git repository" >&2
+    exit 1
+  fi
+
+  branches=$(git branch --sort=-committerdate --format='%(refname:short)' 2>/dev/null | sed 's/^\* //')
+
+  if [ -z "$branches" ]; then
+    echo "No branches available" >&2
+    exit 1
+  fi
+
+  selection=$(echo "$branches" | fzf --multi --prompt="tmux window branches > " --height=40% --reverse --header="Select branches for new tmux windows")
+
+  if [ -z "$selection" ]; then
+    echo "No branches selected" >&2
+    exit 1
+  fi
+
+  existing_windows=$(tmux list-windows -F '#W' 2>/dev/null)
+
+  while IFS= read -r branch; do
+    [ -z "$branch" ] && continue
+
+    if printf '%s\n' "$existing_windows" | grep -Fx -- "$branch" >/dev/null 2>&1; then
+      echo "Window '$branch' already exists, skipping" >&2
+      continue
+    fi
+
+    tmux new-window -n "$branch" -d
+  done <<< "$selection"
+
+  exit 0
 fi
 
-if [ -z "$name" ]; then
-  echo "Usage: mux <name> | mux --dot | mux --sfr" >&2
+if [ "$1" == "help" ]; then
+  sayHelp
+  exit $?
+fi
+
+if [ "$#" -eq 0 ]; then
+  sayHelp
   exit 1
 fi
 
-exec work new -W "$name"
+while [ "$#" -gt 0 ]; do
+    curr=$1
+    shift
+
+    case "$curr" in
+    "--help" | "-h")
+        sayHelp
+        ;;
+    "--sfr")
+        isWork || continue
+        createSession sfr primary -c $STOREFRONT
+        createSession shop primary -c $STOREFRONT
+        ;;
+    "--dot")
+        createSession main-terminal primary
+        createWindow main-terminal dot -c $ZSH
+        [ -n "$NOTES" ] && createWindow main-terminal notes -c $NOTES
+        [ -n "$ZK_PATH" ] && createWindow main-terminal zettel -c $ZK_PATH
+        createWindow main-terminal site -c $PROJECTS/github.com/derekstride/derekstride.github.io
+        ;;
+    *) echo "Unavailable command... $curr"
+    esac
+done
