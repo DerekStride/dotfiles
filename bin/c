@@ -92,6 +92,7 @@ parser = OptionParser.new do |o|
   o.on("-v", "--verbose", "Enable verbose logging") { logger.level -= 1 }
 
   o.on("-m", "--mcp [SERVERS]", Array, "MCP servers to enable (comma-separated, omit for fzf, 'default' for dev-mcp,gt-mcp)") do |servers|
+    options[:agent] = :claude
     options[:mcp] = if servers.nil?
       :fzf
     elsif servers == %w[default]
@@ -102,10 +103,12 @@ parser = OptionParser.new do |o|
   end
 
   o.on("-n", "--no-default", "Start without any MCP servers") do
+    options[:agent] = :claude
     options[:mcp] = nil
   end
 
   o.on("-s", "--skip", "Add #{SKIP_PERMISSIONS_FLAG}") do
+    options[:agent] = :claude
     options[:skip_permissions] = true
   end
 
