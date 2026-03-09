@@ -143,6 +143,7 @@ while [ "$#" -gt 0 ]; do
         [ -n "$NOTES" ] && createWindow main-terminal notes -c $NOTES
         [ -n "$ZK_PATH" ] && createWindow main-terminal zettel -c $ZK_PATH
         createWindow main-terminal site -c $PROJECTS/github.com/derekstride/derekstride.github.io
+        createSession misc primary
         ;;
     *) echo "Unavailable command... $curr"
     esac
