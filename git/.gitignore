@@ -11,3 +11,4 @@ tmp/
 *.luarc.json
 .claude/settings.local.json
 CLAUDE.local.md
+.sift/
