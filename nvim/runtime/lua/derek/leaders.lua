@@ -56,7 +56,7 @@ local function send_to_claude_pane(content, description)
 
   local escaped_content = vim.fn.shellescape(content)
   local tmux_cmd = string.format(
-    "tmux send-keys -t %s %s Enter",
+    "tmux send-keys -t %s %s",
     claude_pane,
     escaped_content
   )
