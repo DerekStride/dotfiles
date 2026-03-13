@@ -119,10 +119,8 @@ module Work
       end
 
       def setup_command(dir)
-        if File.exist?("/opt/dev/bin/dev")
+        if File.exist?("/opt/dev/bin/dev") && File.exist?(File.join(dir, "dev.yml"))
           "dev up"
-        elsif File.exist?(File.join(dir, "Gemfile"))
-          "bundle install"
         end
       end
     end
