@@ -4,6 +4,7 @@ tap 'homebrew/bundle'
 tap 'homebrew/cask-fonts'
 
 brew 'rg'
+brew 'fd'
 brew 'eza'
 brew 'bat'
 brew 'git-delta'
