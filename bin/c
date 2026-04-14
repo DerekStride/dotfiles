@@ -17,7 +17,7 @@ DEVX = "/opt/dev/bin/devx"
 def level = ENV.fetch("LOG_LEVEL", Logger::WARN)
 def progname = File.basename($0)
 def logger = @logger ||= Logger.new($stderr, level:, progname: 'claude')
-def options = @options ||= { mcp: DEFAULT_MCP_SERVERS, agent: :pi }
+def options = @options ||= { mcp: DEFAULT_MCP_SERVERS, agent: :pi, extensions: nil }
 def env = @env ||= {}
 
 def load_mcp_config
@@ -60,6 +60,29 @@ def resolve_server_key(key, all_servers)
   nil
 end
 
+# --- Pi extensions (manually curated) ---
+
+PI_EXTENSIONS = {
+  "messenger" => File.expand_path("~/src/tries/2026-03-30-pi-messenger/src/index.ts"),
+}.freeze
+
+def select_extensions_with_fzf
+  lines = PI_EXTENSIONS.map { |name, path| "#{name}\t#{path}" }
+
+  selected = IO.popen(["fzf", "--multi", "--prompt=Select extensions> ", "--with-nth=1", "--delimiter=\t"], "r+") do |fzf|
+    fzf.puts(lines.join("\n"))
+    fzf.close_write
+    fzf.read.split("\n").map(&:strip).reject(&:empty?)
+  end
+
+  selected.map { |line| line.split("\t").last }
+rescue Errno::ENOENT
+  logger.error("fzf not found. Install fzf or specify extensions with -e")
+  exit(1)
+end
+
+# --- MCP config ---
+
 def write_mcp_config(server_keys)
   full_config = load_mcp_config
   all_servers = full_config["mcpServers"] || {}
@@ -85,7 +108,7 @@ def write_mcp_config(server_keys)
 end
 
 parser = OptionParser.new do |o|
-  o.banner = "usage: #{progname} [options] [claude-code-args]"
+  o.banner = "usage: #{progname} [options] [args]"
   o.separator ""
   o.separator "Options:"
 
@@ -114,6 +137,10 @@ parser = OptionParser.new do |o|
 
   o.on("-a", "--agent NAME", "Agent to use (pi, claude)") do |name|
     options[:agent] = name.to_sym
+  end
+
+  o.on("-E", "--extensions [EXTS]", Array, "Pi extensions to load (comma-separated, omit for fzf)") do |exts|
+    options[:extensions] = exts.nil? ? :fzf : exts
   end
 
   o.on("--pi", "Use pi agent") do
@@ -168,7 +195,29 @@ def claude
 end
 
 def pi
-  agent("pi")
+  agent("pi") do |cmd|
+    case options[:extensions]
+    when :fzf
+      paths = select_extensions_with_fzf
+      if paths.empty?
+        logger.info("No extensions selected")
+      else
+        paths.each { |path| cmd << "-e" << path }
+        logger.info("Loading extensions: #{paths.join(', ')}")
+      end
+    when Array
+      options[:extensions].each do |name|
+        path = PI_EXTENSIONS[name] || File.expand_path(name)
+        if PI_EXTENSIONS.key?(name)
+          cmd << "-e" << path
+          logger.info("Loading extension: #{name}")
+        else
+          cmd << "-e" << path
+          logger.warn("Extension '#{name}' not found in PI_EXTENSIONS, using as path")
+        end
+      end
+    end
+  end
 end
 
 def main
