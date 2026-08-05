@@ -63,7 +63,18 @@ end
 
 PI_EXTENSIONS = {
   "messenger" => File.expand_path("~/src/tries/2026-03-30-pi-messenger/src/index.ts"),
-}.freeze
+  "tool-gateway" => File.expand_path("~/src/github.com/shopify-playground/pi-tool-gateway-extension/index.ts"),
+}
+
+Dir.glob(File.expand_path("~/.pi/agent/git/github.com/shopify-playground/shop-pi-fy/extensions/*")) do |path|
+  extension_name = File.basename(path)
+  candidate = File.join(path, "index.ts")
+  if File.exist?(candidate)
+    PI_EXTENSIONS[extension_name] = candidate
+  else
+    binding.irb
+  end
+end
 
 def select_extensions_with_fzf
   lines = PI_EXTENSIONS.map { |name, path| "#{name}\t#{path}" }
