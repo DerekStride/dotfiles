@@ -12,3 +12,5 @@ tmp/
 .claude/settings.local.json
 CLAUDE.local.md
 .sift/
+
+**/.claude/settings.local.json
