@@ -8,3 +8,6 @@ else
   alias l="ls -hlF --color"
 fi
 
+omp() {
+  HERDR_AGENT=omp command omp "$@"
+}

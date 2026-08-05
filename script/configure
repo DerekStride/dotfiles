@@ -8,4 +8,5 @@ stow git
 stow ruby
 stow zsh
 stow tmux
+stow herdr
 stow nvim

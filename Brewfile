@@ -11,6 +11,7 @@ brew 'git-delta'
 brew 'fzf'
 brew 'gh'
 brew 'tmux'
+brew 'herdr'
 brew 'coreutils'
 cask 'font-victor-mono'
 

@@ -1,1 +1,2 @@
-command = /bin/zsh -l -c "tmux new-session -A -s main-terminal -n primary"
+# Start Herdr in every new Ghostty surface.
+command = /opt/homebrew/bin/herdr
