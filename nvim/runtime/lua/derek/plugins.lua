@@ -50,6 +50,6 @@ return require('packer').startup(function()
   use { 'nvim-lua/popup.nvim' }
   use { 'nvim-lua/plenary.nvim' }
   use { 'nvim-telescope/telescope.nvim' }
-  use { 'nvim-telescope/telescope-fzy-native.nvim' }
+  use { 'nvim-telescope/telescope-fzf-native.nvim', run = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release --target install' }
   use { 'lewis6991/gitsigns.nvim' }
 end)

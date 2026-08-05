@@ -40,7 +40,7 @@ end
 
 function M.default_finder()
   builtin.find_files {
-    find_command = {'rg', '--files'},
+    find_command = {'fd'},
     hidden = true,
     follow = true
   }
