@@ -153,6 +153,14 @@ local function open_in_github()
     return
   end
 
+  -- If origin points to the Git Stream mirror, prefer the 'github' remote
+  if remote_url:match("gitstream%.shopify%.io") then
+    local github_remote = vim.fn.system("git remote get-url github 2>/dev/null"):gsub("%s+", "")
+    if github_remote ~= "" then
+      remote_url = github_remote
+    end
+  end
+
   -- Parse remote URL to GitHub base URL (handles SSH and HTTPS)
   local github_url
   local ssh_match = remote_url:match("git@github%.com:(.+)%.git$") or remote_url:match("git@github%.com:(.+)$")
