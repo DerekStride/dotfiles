@@ -16,7 +16,7 @@ DEVX = "/opt/dev/bin/devx"
 def level = ENV.fetch("LOG_LEVEL", Logger::WARN)
 def progname = File.basename($0)
 def logger = @logger ||= Logger.new($stderr, level:, progname: 'claude')
-def options = @options ||= { mcp: nil, agent: :pi, extensions: nil }
+def options = @options ||= { mcp: nil, agent: :pi, extensions: nil, skip_permissions: true }
 def env = @env ||= {}
 
 def load_mcp_config
@@ -123,9 +123,9 @@ parser = OptionParser.new do |o|
     options[:mcp] = nil
   end
 
-  o.on("-s", "--skip", "Add #{SKIP_PERMISSIONS_FLAG}") do
+  o.on("-s", "--safe", "Remove #{SKIP_PERMISSIONS_FLAG}") do
     options[:agent] = :claude
-    options[:skip_permissions] = true
+    options[:skip_permissions] = false
   end
 
   o.on("-a", "--agent NAME", "Agent to use (pi, claude)") do |name|
