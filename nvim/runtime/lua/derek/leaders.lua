@@ -1,16 +1,65 @@
 local keymap = vim.keymap
 local default_opts = { silent = true, noremap = true }
 
-local function find_claude_pane()
-  local find_claude_cmd = "tmux list-panes -F '#{pane_id} #{pane_current_command}' | grep -E '(claude|node)' | head -1 | cut -d' ' -f1"
-  local claude_pane = vim.fn.system(find_claude_cmd):gsub("%s+", "")
+local function run_herdr(args)
+  local herdr = vim.env.HERDR_BIN_PATH
+  if not herdr or herdr == "" then
+    herdr = "herdr"
+  end
 
-  if claude_pane == "" then
-    print("No Claude Code pane found. Make sure claude code is running in a tmux pane.")
+  local command = { herdr }
+  vim.list_extend(command, args)
+
+  local output = vim.fn.system(command)
+  if vim.v.shell_error ~= 0 then
+    local message = vim.trim(output)
+    return nil, message ~= "" and message or "Herdr command failed"
+  end
+
+  return output
+end
+
+local function run_herdr_json(args)
+  local output, command_error = run_herdr(args)
+  if not output then
+    return nil, command_error
+  end
+
+  local ok, response = pcall(vim.json.decode, output)
+  if not ok or type(response) ~= "table" or type(response.result) ~= "table" then
+    return nil, "Herdr returned an invalid response"
+  end
+
+  return response.result
+end
+
+local function find_agent_pane()
+  if not vim.env.HERDR_PANE_ID or vim.env.HERDR_PANE_ID == "" then
+    print("Not running inside a Herdr pane")
     return nil
   end
 
-  return claude_pane
+  local current_result, current_error = run_herdr_json({ "pane", "current", "--current" })
+  if not current_result then
+    print("Could not identify the current Herdr pane: " .. current_error)
+    return nil
+  end
+
+  local agents_result, agents_error = run_herdr_json({ "agent", "list" })
+  if not agents_result then
+    print("Could not list Herdr agents: " .. agents_error)
+    return nil
+  end
+
+  local current_pane = current_result.pane
+  for _, agent in ipairs(agents_result.agents or {}) do
+    if agent.tab_id == current_pane.tab_id and agent.pane_id ~= current_pane.pane_id then
+      return agent
+    end
+  end
+
+  print("No agent pane found in the current Herdr tab")
+  return nil
 end
 
 local function get_relative_filepath(filepath)
@@ -48,24 +97,22 @@ local function get_relative_filepath(filepath)
   return relative_path
 end
 
-local function send_to_claude_pane(content, description)
-  local claude_pane = find_claude_pane()
-  if not claude_pane then
+local function send_to_agent_pane(content, description)
+  local agent = find_agent_pane()
+  if not agent then
     return
   end
 
-  local escaped_content = vim.fn.shellescape(content)
-  local tmux_cmd = string.format(
-    "tmux send-keys -t %s %s",
-    claude_pane,
-    escaped_content
-  )
+  local _, send_error = run_herdr({ "pane", "send-text", agent.pane_id, content })
+  if send_error then
+    print("Could not send text to the agent pane: " .. send_error)
+    return
+  end
 
-  vim.fn.system("bash -c " .. vim.fn.shellescape(tmux_cmd))
-  print(description .. " (pane " .. claude_pane .. ")")
+  print(string.format("%s (%s, pane %s)", description, agent.agent or "agent", agent.pane_id))
 end
 
-local function send_to_claude()
+local function send_to_agent()
   local text = ""
 
   -- Get visual selection if in visual mode
@@ -94,14 +141,14 @@ local function send_to_claude()
   end
 
   if text == "" then
-    print("No text to send to Claude")
+    print("No text to send to the agent")
     return
   end
 
-  send_to_claude_pane(text, "Sent " .. #text .. " characters to Claude Code")
+  send_to_agent_pane(text, "Sent " .. #text .. " characters to the agent")
 end
 
-local function send_filepath_to_claude()
+local function send_filepath_to_agent()
   local filepath = vim.fn.expand("%:p")
 
   if filepath == "" then
@@ -111,7 +158,7 @@ local function send_filepath_to_claude()
 
   local relative_path = "@" .. get_relative_filepath(filepath)
 
-  send_to_claude_pane(relative_path, "Sent filepath to Claude Code: " .. relative_path)
+  send_to_agent_pane(relative_path, "Sent filepath to the agent: " .. relative_path)
 end
 
 local function copy_filepath_to_clipboard()
@@ -229,8 +276,8 @@ end
 keymap.set("n", "<leader><leader>m", "<cmd>!mux split<cr><cr>", default_opts)
 keymap.set("n", "<leader><leader>s", "<cmd>set nonumber<cr>", default_opts)
 keymap.set("n", "<leader><leader>p", "<cmd>set number<cr>", default_opts)
-keymap.set({"n", "v"}, "<leader><leader>c", send_to_claude, default_opts)
-keymap.set({"n", "v"}, "<leader><leader>f", send_filepath_to_claude, default_opts)
+keymap.set({"n", "v"}, "<leader><leader>c", send_to_agent, default_opts)
+keymap.set({"n", "v"}, "<leader><leader>f", send_filepath_to_agent, default_opts)
 keymap.set({"n", "v"}, "<leader><leader>y", copy_filepath_to_clipboard, default_opts)
 keymap.set({"n", "v"}, "<leader><leader>g", open_in_github, default_opts)
 keymap.set("n", "<leader>np", open_prompt_notes, default_opts)
