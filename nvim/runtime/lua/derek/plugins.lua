@@ -17,6 +17,13 @@ return require('packer').startup(function()
 
   --tmux aware pane / split switching
   use { 'christoomey/vim-tmux-navigator' }
+  use {
+    'aimdevlee/herdr-nvim-nav',
+    commit = 'ec047fd6d8d0269d54a34e9405af28d8aad4c8f0',
+    config = function()
+      require('herdr-nvim-nav').setup()
+    end,
+  }
 
   --tmux scripting from vim
   use { 'benmills/vimux' }

@@ -7,16 +7,40 @@ new_cwd = "follow"
 prefix = "ctrl+b"
 reload_config = "prefix+r"
 copy_mode = "prefix+["
-focus_pane_left = "prefix+h"
-focus_pane_down = "prefix+j"
-focus_pane_up = "prefix+k"
-focus_pane_right = "prefix+l"
+focus_pane_left = ""
+focus_pane_down = ""
+focus_pane_up = ""
+focus_pane_right = ""
 last_pane = "prefix+backslash"
 split_vertical = "prefix+v"
 split_horizontal = "prefix+s"
 zoom = "prefix+space"
 previous_workspace = "prefix+("
 next_workspace = "prefix+)"
+
+[[keys.command]]
+key = "prefix+h"
+type = "plugin_action"
+command = "herdr-nvim-nav.left"
+description = "navigate left (Neovim/Herdr)"
+
+[[keys.command]]
+key = "prefix+j"
+type = "plugin_action"
+command = "herdr-nvim-nav.down"
+description = "navigate down (Neovim/Herdr)"
+
+[[keys.command]]
+key = "prefix+k"
+type = "plugin_action"
+command = "herdr-nvim-nav.up"
+description = "navigate up (Neovim/Herdr)"
+
+[[keys.command]]
+key = "prefix+l"
+type = "plugin_action"
+command = "herdr-nvim-nav.right"
+description = "navigate right (Neovim/Herdr)"
 
 [theme]
 name = "dracula"
